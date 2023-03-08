@@ -10,7 +10,8 @@ typedef struct
 
 GPIO_STATE Gpio_Read(GPIO_h gpio)
 {
-	assert(gpio != 0)   // gpio exists
+	assert(gpio != 0);   // gpio exists
+    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as input?
     
@@ -21,7 +22,8 @@ GPIO_STATE Gpio_Read(GPIO_h gpio)
 
 ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE state)
 {
-	assert(gpio != 0)   // gpio exists
+	assert(gpio != 0);   // gpio exists
+    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
