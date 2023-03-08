@@ -4,7 +4,7 @@
 #include "stdint.h"
 #include <stdbool.h>
 #include "error.h"
-#include "gpio_def.h"
+#include "gpio_def.h"	// contains platform-specific defines
 
 typedef enum {
     GPIO_LOW = 0;
