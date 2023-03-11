@@ -4,8 +4,8 @@
 
 typedef struct
 {
-    GPIO_TypeDef* port;
-	GPIO_PIN pin;
+    GPIO_TypeDef * const port;
+	GPIO_PIN const pin;
 } GPIO_CTX;
 
 GPIO_STATE Gpio_Read(GPIO_h gpio)
@@ -20,7 +20,7 @@ GPIO_STATE Gpio_Read(GPIO_h gpio)
     return (gpio->port->IDR & (1 << gpio->pin)) ? GPIO_SET : GPIO_RESET;
 }
 
-ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE state)
+ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state)
 {
 	assert(gpio != 0);   // gpio exists
     assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port

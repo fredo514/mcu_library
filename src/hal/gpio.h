@@ -7,8 +7,8 @@
 #include "gpio_def.h"	// contains platform-specific defines
 
 typedef enum {
-    GPIO_LOW = 0;
-    GPIO_HIGH = 1;
+    GPIO_LOW = 0,
+    GPIO_HIGH = 1
 } GPIO_STATE;
 
 typedef enum {
@@ -30,7 +30,7 @@ typedef enum {
 	GPIO_PIN_15 = 15
 } GPIO_PIN;
 
-typedef GPIO_CTX* const GPIO_h;
+typedef GPIO_CTX const * const GPIO_h;
 
 typedef struct {
     GPIO_h gpio;
@@ -40,14 +40,14 @@ typedef struct {
     GPIO_ALT_FUNCTION alt_function;
 } GPIO_CONFIG;
 
-ERROR_CODE Gpio_Init(const GPIO_CONFIG* const config);
-ERROR_CODE Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE mode);
-ERROR_CODE Gpio_Dir_Set(GPIO_h gpio, GPIO_DIR dir);
-ERROR_CODE Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK function, void (*cb)(void));  // really need this?
+ERROR_CODE Gpio_Init(GPIO_CONFIG const * const config);
+ERROR_CODE Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE const mode);
+ERROR_CODE Gpio_Dir_Set(GPIO_h gpio, GPIO_DIR const dir);
+ERROR_CODE Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK const function, void (*cb)(void));  // really need this?
 
-GPIO_STATE Gpio_Read(const GPIO_h gpio);
+GPIO_STATE Gpio_Read(GPIO_h gpio);
 
-ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE state);
+ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state);
 ERROR_CODE Gpio_Set_Low(GPIO_h gpio);
 ERROR_CODE Gpio_Set_High(GPIO_h gpio);
 ERROR_CODE Gpio_Toggle(GPIO_h gpio);
@@ -58,7 +58,7 @@ bool Gpio_Is_High(GPIO_h gpio);  // for input
 bool Gpio_Is_Low(GPIO_h gpio);  // for input
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE Gpio_Reg_Write (uintptr address, uint32_t val);
-uint32_t Gpio_Reg_Read (uintptr address);
+ERROR_CODE Gpio_Reg_Write (uintptr_t * const address, uint32_t const val);
+uint32_t Gpio_Reg_Read (uintptr_t * const address);
 
 #endif // GPIO_H
