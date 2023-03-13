@@ -1,0 +1,1 @@
+// use preprocessor defines to include the correct platform hal file

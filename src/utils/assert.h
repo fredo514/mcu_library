@@ -1,6 +1,8 @@
 #ifndef ASSERT_H
 #define	ASSERT_H
 
+#include "platform.h"
+
 // macro to give files a unique ID
 // use in each .c file
 #define FILENUM(num) \
@@ -9,8 +11,8 @@
 
 // Convenience structure to store debug info.
 typedef struct {
-  uint32_t pc;
-  uint32_t lr;
+  REG_SIZE pc;
+  REG_SIZE lr;
   uint8_t file_num;
   uint16_t line;
   ERROR_CODE_t error_code;

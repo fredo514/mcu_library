@@ -5,7 +5,7 @@
 typedef struct
 {
     GPIO_TypeDef * const port;
-	GPIO_PIN const pin;
+    GPIO_PIN const pin;
 } GPIO_CTX;
 
 GPIO_STATE Gpio_Read(GPIO_h gpio)
@@ -32,7 +32,7 @@ ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state)
     // Access both the set and reset bits of the BSRR register at the same time
     // with the reset bit using the invert of the requested state
     // Done this way because it generates the most efficient assembly
-    gpio->port->BSRR = ((uint32_t)state << gpio->pin) << 16) | (((uint32_t)!state) << gpio->pin);
+    gpio->port->BSRR = ((REG_SIZE)state << gpio->pin) << 16) | (((REG_SIZE)!state) << gpio->pin);
     ret = SUCCESS;
 
     return ret;
