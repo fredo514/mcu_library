@@ -30,7 +30,7 @@ uint32_t Timer_Count_Get(TIMER_h timer);
 ERROR_CODE Timer_Count_Set(TIMER_h timer, uint32_t const count);
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE Gpio_Reg_Write (REG_SIZE * const address, uint32_t const val);
-REG_SIZE Gpio_Reg_Read (REG_SIZE * const address);
+ERROR_CODE Timer_Reg_Write (REG_SIZE * const address, uint32_t const val);
+REG_SIZE Timer_Reg_Read (REG_SIZE * const address);
 
 #endif // TIMER_H
