@@ -4,14 +4,22 @@
 
 typedef struct
 {
-    GPIO_TypeDef * const port;
+    GPIO_PORT * const port;
     GPIO_PIN const pin;
 } GPIO_CTX;
 
+ERROR_CODE Gpio_Init(GPIO_h gpio, GPIO_CONFIG const * const config) {
+    ASSERT(config != 0);   // config exists
+    ASSERT(gpio != 0);   // gpio exists
+    ASSERT((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
+
+    // enable clock for gpio port
+}
+
 GPIO_STATE Gpio_Read(GPIO_h gpio)
 {
-	assert(gpio != 0);   // gpio exists
-    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
+	ASSERT_DEBUG(gpio != 0);   // gpio exists
+    ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as input?
     
@@ -22,8 +30,8 @@ GPIO_STATE Gpio_Read(GPIO_h gpio)
 
 ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state)
 {
-	assert(gpio != 0);   // gpio exists
-    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
+	ASSERT_DEBUG(gpio != 0);   // gpio exists
+    ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
@@ -40,8 +48,8 @@ ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state)
 
 ERROR_CODE Gpio_Set_High(GPIO_h gpio)
 {
-	assert(gpio != 0);   // gpio exists
-    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
+	ASSERT_DEBUG(gpio != 0);   // gpio exists
+    ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
@@ -55,8 +63,8 @@ ERROR_CODE Gpio_Set_High(GPIO_h gpio)
 
 ERROR_CODE Gpio_Set_Low(GPIO_h gpio)
 {
-	assert(gpio != 0);   // gpio exists
-    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
+	ASSERT_DEBUG(gpio != 0);   // gpio exists
+    ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
@@ -70,8 +78,8 @@ ERROR_CODE Gpio_Set_Low(GPIO_h gpio)
 
 ERROR_CODE Gpio_Toggle(GPIO_h gpio)
 {
-	assert(gpio != 0);   // gpio exists
-    assert((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
+	ASSERT_DEBUG(gpio != 0);   // gpio exists
+    ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
@@ -84,4 +92,12 @@ ERROR_CODE Gpio_Toggle(GPIO_h gpio)
     ret = SUCCESS;
 
     return ret;
+}
+
+ERROR_CODE Gpio_Reg_Write (REG_SIZE const address, uint32_t const val) {
+    *((REG_SIZE * const)address) = val;
+}
+
+REG_SIZE Gpio_Reg_Read (REG_SIZE const address) {
+    return *((REG_SIZE * const)address);
 }

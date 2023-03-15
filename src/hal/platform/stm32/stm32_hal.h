@@ -2,11 +2,13 @@
 
 #define REG_SIZE uint32_t
 
-// declare const pointers to structures of volatile uint32_t
 // typedef {
-//     uint32_t volatile BSRR;
-// } GPIO_REGS;
+//     REG_SIZE volatile IDR;
+//     REG_SIZE volatile DIR;
+//     REG_SIZE volatile ODR;
+//     REG_SIZE volatile BSRR;
+// } GPIO_PORT;
 
-// GPIO_REGS * const PORTA = (GPIO_REGS*)0xCAFECAFE;
+// GPIO_PORT * const PORTA = (GPIO_PORT*)0xCAFECAFE;
 
 uint32_t Sysclk_Get_Hz(void);

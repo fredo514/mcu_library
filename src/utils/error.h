@@ -1,5 +1,5 @@
-#ifndef ERROR_CODES_H 
-#define ERROR_CODES_H 
+#ifndef ERROR_H 
+#define ERROR_H 
 
 typedef void (*error_callback_t)(const ERROR_CTX* error_ctx); // application function called when declaring an error 
 typedef void (*error_reboot_callback_t)(const ERROR_CTX* error_ctx); // apprication function called after boot with pointer to RAM array 
@@ -107,4 +107,4 @@ typedef enum
 */ 
 #define VERIFY_SUCCESS_VOID(err_code) VERIFY_TRUE_VOID((err_code) == SUCCESS) 
 
-#endif /* ERROR_CODES_H */ 
+#endif /* ERROR_H */ 

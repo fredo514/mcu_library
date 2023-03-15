@@ -28,7 +28,7 @@ void assert_init(void (*callback)(void));
 void assertion_failure(uint8_t file, uint16_t linenum);
 void assertion_failure_log(sAssertInfo info);
  
-#define ASSERT_ALWAYS(expr) ((expr) ? (void)0 : assertion_failure((uint8_t)F_NUM, (uint16_t)__LINE__))
+#define ASSERT(expr) ((expr) ? (void)0 : assertion_failure((uint8_t)F_NUM, (uint16_t)__LINE__))
 
 #define ASSERT_LOG(expr, err)                        \
   do {                                               \
