@@ -12,7 +12,6 @@ typedef TIMER_CTX * const TIMER_h;
 #define ENABLE true
 
 typedef struct {
-    TIMER_h timer;
     bool state;
     TIMER_CNT_MODE counter_mode;
     TIMER_CLK_SRC clock_source;
@@ -22,7 +21,9 @@ typedef struct {
     bool autoreload;
 } TIMER_CONFIG;
 
-ERROR_CODE Timer_Init(TIMER_CONFIG const * const config);
+ERROR_CODE Timer_Init(TIMER_h timer, TIMER_CONFIG const * const config);
+ERROR_CODE Timer_Callback_Register(TIMER_h timer, TIMER_CALLBACK const function, void (*cb)(void));  // really need this?
+
 ERROR_CODE Timer_Control(TIMER_h timer, bool const state);
 ERROR_CODE Timer_Period_Set(TIMER_h timer, uint32_t const period_us);
 

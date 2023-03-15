@@ -33,17 +33,16 @@ typedef enum {
 typedef GPIO_CTX const * const GPIO_h;
 
 typedef struct {
-    GPIO_h gpio;
     GPIO_MODE mode;
     GPIO_PULL pull;
     GPIO_STATE intial_state;
     GPIO_ALT_FUNCTION alt_function;
 } GPIO_CONFIG;
 
-ERROR_CODE Gpio_Init(GPIO_CONFIG const * const config);
+ERROR_CODE Gpio_Init(GPIO_h gpio, GPIO_CONFIG const * const config);
+ERROR_CODE Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK const function, void (*cb)(void));  // really need this?
 ERROR_CODE Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE const mode);
 ERROR_CODE Gpio_Dir_Set(GPIO_h gpio, GPIO_DIR const dir);
-ERROR_CODE Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK const function, void (*cb)(void));  // really need this?
 
 GPIO_STATE Gpio_Read(GPIO_h gpio);
 
