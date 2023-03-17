@@ -49,12 +49,12 @@ ERROR_CODE Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE const mode);
 
 GPIO_STATE Gpio_Pin_Read(GPIO_h gpio);
 ERROR_CODE Gpio_Pin_Set(GPIO_h gpio, GPIO_STATE const state);
-ERROR_CODE Gpio_Pin_Set_Low(GPIO_h gpio);
-ERROR_CODE Gpio_Pin_Set_High(GPIO_h gpio);
+// ERROR_CODE Gpio_Pin_Set_Low(GPIO_h gpio);
+// ERROR_CODE Gpio_Pin_Set_High(GPIO_h gpio);
 ERROR_CODE Gpio_Pin_Toggle(GPIO_h gpio);
 
-bool Gpio_Is_Set_High(GPIO_h gpio);  // for output
-bool Gpio_Is_Set_Low(GPIO_h gpio);  // for output
+// bool Gpio_Is_Set_High(GPIO_h gpio);  // for output
+// bool Gpio_Is_Set_Low(GPIO_h gpio);  // for output
 bool Gpio_Is_High(GPIO_h gpio);  // for input
 bool Gpio_Is_Low(GPIO_h gpio);  // for input
 
