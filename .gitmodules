@@ -1,3 +1,6 @@
 [submodule "src/libs/fatfs"]
 	path = src/libs/fatfs
 	url = https://github.com/abbrev/fatfs
+[submodule "src/libs/--force"]
+	path = src/libs/--force
+	url = https://github.com/abbrev/fatfs
