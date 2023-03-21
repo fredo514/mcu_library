@@ -40,9 +40,9 @@ void assertion_failure_log(sAssertInfo info);
 //     if (!(expr)) {                                   \
 //       g_assert_info.pc = GET_PC();                   \   
 //       g_assert_info.lr = GET_LR();                   \
-//       g_assert_info.file_num = (uint8_t)F_NUM        \
-//       g_assert_info.line = (uint16_t)__LINE__)       \
-//       g_assert_info.error_code = (ERROR_CODE_t)(err) \
+//       g_assert_info.file_num = __FILE__;             \
+//       g_assert_info.line = (uint16_t)__LINE__);      \
+//       g_assert_info.error_code = (ERROR_CODE_t)(err);\
 //       assertion_failure_log(g_assert_info);          \
 //     }
 //   } while (0)
