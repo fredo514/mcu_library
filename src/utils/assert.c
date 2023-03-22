@@ -12,27 +12,27 @@ void assert_init(void (*callback)(void)) {
 // failure function called by macro. 
 #ifndef NO_ASSERTIONS
 // void assertion_failure(uint8_t file, uint16_t linenum) {  
-void assertion_failure(const char *__file, uint16_t linenum) {  
+void assertion_failure(char const * const file, uint16_t const linenum) {  
+    __disable_irq();
+    
     // reset stack pointer if overflow?
     
 #ifdef __DEBUG
     // software breakpoint if debugging  
     // debugger can look at these 
-    volatile uint8_t v_file; 
+    volatile char * v_file; 
     volatile uint16_t v_linenum; 
  
     // assign variables to volatiles 
     v_file = file; 
     v_linenum = linenum;
-    
+
+    printf("Assert fail at file %s, line %u ", __file, linenum); // move to assert_ind?
+
     __builtin_software_breakpoint();
 #else
-    // get LR?
-
     // call function that indicates an assertion failure  
     assert_ind();
-    
-    printf("Assert fail at file %u, line %u ", file, linenum); // move to assert_ind?
     
     // halt (or reset?) 
     while(1);  // move to assert_int?

@@ -4,11 +4,11 @@
 
 typedef struct
 {
-    GPIO_PORT * const port;
-    GPIO_PIN const pin;
-} GPIO_CTX;
+    GPIO_PORT_t * const port;
+    GPIO_PIN_t const pin;
+} GPIO_CTX_t;
 
-ERROR_CODE Gpio_Init(GPIO_h gpio, GPIO_CONFIG const * const config) {
+ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config) {
     ASSERT(config != 0);   // config exists
     ASSERT(gpio != 0);   // gpio exists
     ASSERT((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
@@ -16,7 +16,7 @@ ERROR_CODE Gpio_Init(GPIO_h gpio, GPIO_CONFIG const * const config) {
     // enable clock for gpio port
 }
 
-GPIO_STATE Gpio_Read(GPIO_h gpio)
+GPIO_STATE_t Gpio_Read(GPIO_h gpio)
 {
 	ASSERT_DEBUG(gpio != 0);   // gpio exists
     ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
@@ -28,14 +28,14 @@ GPIO_STATE Gpio_Read(GPIO_h gpio)
     return (gpio->port->IDR & (1 << gpio->pin)) ? GPIO_SET : GPIO_RESET;
 }
 
-ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state)
+ERROR_CODE_t Gpio_Set(GPIO_h gpio, GPIO_STATE_t const state)
 {
 	ASSERT_DEBUG(gpio != 0);   // gpio exists
     ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
-    ERROR_CODE ret = ERROR;
+    ERROR_CODE_t ret = ERROR;
 
     // Access both the set and reset bits of the BSRR register at the same time
     // with the reset bit using the invert of the requested state
@@ -46,14 +46,14 @@ ERROR_CODE Gpio_Set(GPIO_h gpio, GPIO_STATE const state)
     return ret;
 }
 
-ERROR_CODE Gpio_Set_High(GPIO_h gpio)
+ERROR_CODE_t Gpio_Set_High(GPIO_h gpio)
 {
 	ASSERT_DEBUG(gpio != 0);   // gpio exists
     ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
-    ERROR_CODE ret = ERROR;
+    ERROR_CODE_t ret = ERROR;
 
     gpio->port->BSRR = 1 << gpio->pin;
     ret = SUCCESS;
@@ -61,14 +61,14 @@ ERROR_CODE Gpio_Set_High(GPIO_h gpio)
     return ret;
 }
 
-ERROR_CODE Gpio_Set_Low(GPIO_h gpio)
+ERROR_CODE_t Gpio_Set_Low(GPIO_h gpio)
 {
 	ASSERT_DEBUG(gpio != 0);   // gpio exists
     ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
-    ERROR_CODE ret = ERROR;
+    ERROR_CODE_t ret = ERROR;
 
     gpio->port->BRR = 1 << gpio->pin;
     ret = SUCCESS;
@@ -76,14 +76,14 @@ ERROR_CODE Gpio_Set_Low(GPIO_h gpio)
     return ret;
 }
 
-ERROR_CODE Gpio_Toggle(GPIO_h gpio)
+ERROR_CODE_t Gpio_Toggle(GPIO_h gpio)
 {
 	ASSERT_DEBUG(gpio != 0);   // gpio exists
     ASSERT_DEBUG((gpio->pin >= 0) && (gpio->pin < 16));   // only 16 pins per port
 
     // TODO: What to do if the gpio is not set as output?
 
-    ERROR_CODE ret = ERROR;
+    ERROR_CODE_t ret = ERROR;
 
     // Access both the set and reset bits of the BSRR register at the same time
     // with the reset bit using the invert of the ODR register current state
@@ -94,10 +94,10 @@ ERROR_CODE Gpio_Toggle(GPIO_h gpio)
     return ret;
 }
 
-ERROR_CODE Gpio_Reg_Write (REG_SIZE const address, uint32_t const val) {
-    *((REG_SIZE * const)address) = val;
+ERROR_CODE_t Gpio_Reg_Write (REG_SIZE_t const address, uint32_t const val) {
+    *((REG_SIZE_t * const)address) = val;
 }
 
-REG_SIZE Gpio_Reg_Read (REG_SIZE const address) {
-    return *((REG_SIZE * const)address);
+REG_SIZE_t Gpio_Reg_Read (REG_SIZE_t const address) {
+    return *((REG_SIZE_t * const)address);
 }

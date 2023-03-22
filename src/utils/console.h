@@ -4,6 +4,6 @@
 #include <stdint.h>
 #include "error.h"
 
-ERROR_CODE Console_Parse(uint8_t const ch);
+ERROR_CODE_t Console_Parse(uint8_t const ch);
 
 #endif // CONSOLE_H

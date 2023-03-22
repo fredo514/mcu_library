@@ -3,20 +3,20 @@
 typedef enum {
     CONSOLE_HELP,
     CONSOLE_CMD_MAX
-} CONSOLE_CMD;
+} CONSOLE_CMD_t;
 
 typedef struct {
-    CONSOLE_CMD command;
+    CONSOLE_CMD_t command;
     void (*cb)(void);
-} CONSOLE_ELEM;
+} CONSOLE_ELEM_t;
 
 static void Help_Func(void);
 
-static CONSOLE_ELEM command_array[CONSOLE_CMD_MAX] = {
+static CONSOLE_ELEM_t command_array[CONSOLE_CMD_MAX] = {
     {CONSOLE_HELP, &Help_Func},
 };
 
-ERROR_CODE Console_Parse(uint8_t const ch){
+ERROR_CODE_t Console_Parse(uint8_t const ch){
     
 }
 

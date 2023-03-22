@@ -1,8 +1,8 @@
 #ifndef ERROR_H 
 #define ERROR_H 
 
-typedef void (*error_callback_t)(const ERROR_CTX* error_ctx); // application function called when declaring an error 
-typedef void (*error_reboot_callback_t)(const ERROR_CTX* error_ctx); // apprication function called after boot with pointer to RAM array 
+typedef void (*error_callback_t)(const ERROR_CTX_t* error_ctx); // application function called when declaring an error 
+typedef void (*error_reboot_callback_t)(const ERROR_CTX_t* error_ctx); // application function called after boot with pointer to RAM array 
  
 /* @brief Enumerated type for error codes. */ 
 typedef enum  
@@ -24,7 +24,7 @@ typedef enum
     ERROR_UNINITIALIZED,        // Instance not configured     
     ERROR_ALREADY_INITIALIZED,  // Instance already configured  
     ERROR_OVERRUN               // Buffer overflow.                      
-} ERROR_CODE; 
+} ERROR_CODE_t; 
 
 /**@brief Macro for calling error handler if supplied error code any other than SUCCESS. 
 * 

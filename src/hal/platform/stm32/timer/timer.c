@@ -3,10 +3,10 @@
 #include "assert.h"
 
 typedef struct {
-  TIMER_TypeDef * const regs;
-} TIMER_CTX;
+  TIMER_REGS_t * const regs;
+} TIMER_CTX_t;
 
-ERROR_CODE Timer_Init(TIMER_CONFIG const * const config) {
+ERROR_CODE_t Timer_Init(TIMER_CONFIG_t const * const config) {
     // Enable Clock
     
     // Reset Timer

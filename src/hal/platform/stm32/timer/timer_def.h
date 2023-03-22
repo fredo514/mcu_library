@@ -4,11 +4,11 @@
 typedef enum {
     UP_COUNT,
     DOWN_COUNT
-} TIMER_CNT_MODE;
+} TIMER_CNT_MODE_t;
 
 typedef enum {
     NONE,
     PLL
-} TIMER_CLK_SRC;
+} TIMER_CLK_SRC_t;
 
 #endif // TIMER_DEF_H
