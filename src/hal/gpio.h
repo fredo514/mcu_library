@@ -7,8 +7,8 @@
 #include "gpio_def.h"	// contains platform-specific defines
 
 typedef enum {
-    LOW = 0,
-    HIGH = 1,
+	LOW = 0,
+	HIGH = 1,
 	GPIO_STATE_MAX
 } GPIO_STATE_t;
 
