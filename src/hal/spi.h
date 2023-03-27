@@ -26,6 +26,8 @@ ERROR_CODE_t Spi_Mode_Set(SPI_h spi, SPI_MODE_t const mode);
 
 uint8_t Spi_Exchange(SPI_h spi, uint8_t const ch);
 
+// TODO: non-blocking API
+
 bool Spi_Is_Busy(SPI_h spi);
 
 // Use these SPARINGLY to extend the API

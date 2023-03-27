@@ -20,6 +20,8 @@ uint8_t Uart_Char_Get(UART_h uart);
 ERROR_CODE_t Uart_Flush_All(UART_h uart);
 ERROR_CODE_t Uart_Flush_Rx(UART_h uart);
 ERROR_CODE_t Uart_Flush_Tx(UART_h uart);
+
+// TODO: non-blocking API
  
 bool Uart_Is_Tx_Done(UART_h uart);
 bool Uart_Is_Char_Available(UART_h uart);
