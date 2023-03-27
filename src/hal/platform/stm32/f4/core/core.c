@@ -2,7 +2,7 @@
 #include "core_cm3.h"
 
 
-bool Core_Save_And_Disable_Interrupts(CORE_IRQ_t const IRQn) {
+bool Core_Save_And_Disable_Interrupt(CORE_IRQ_t const IRQn) {
     bool state;
     if (IRQ_ALL == IRQn) {
         state = __get_PRIMASK();
@@ -16,7 +16,7 @@ bool Core_Save_And_Disable_Interrupts(CORE_IRQ_t const IRQn) {
     return state;
 }
 
-void Core_Restore_Interrupts(CORE_IRQ_t const IRQn, bool const wasEnabled) {
+void Core_Restore_Interrupt(CORE_IRQ_t const IRQn, bool const wasEnabled) {
     if (wasEnabled) {
         if (IRQ_ALL == IRQn) {
             __enable_irq();

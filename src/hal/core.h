@@ -21,7 +21,7 @@ typedef enum {
 ERROR_CODE_t Core_Init(void);
 ERROR_CODE_t Core_Interrupt_Callback_Attach(CORE_IRQ_t const IRQn, void cb(void));
 
-bool Core_Save_And_Disable_Interrupts(CORE_IRQ_t const IRQn);
-void Core_Restore_Interrupts(CORE_IRQ_t const IRQn, bool const wasEnabled);
+bool Core_Save_And_Disable_Interrupt(CORE_IRQ_t const IRQn);
+void Core_Restore_Interrupt(CORE_IRQ_t const IRQn, bool const wasEnabled);
 
 #endif // CORE_H
