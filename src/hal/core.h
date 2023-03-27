@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include <stdbool.h>
 #include "error.h"
+#include "macros.h"
 
 typedef enum {
   IRQ_ALL = SIZE_MAX
