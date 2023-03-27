@@ -1,6 +1,3 @@
-[submodule "src/libs/fatfs"]
-	path = src/libs/fatfs
-	url = https://github.com/abbrev/fatfs
 [submodule "src/libs/littlefs"]
 	path = src/libs/littlefs
 	url = https://github.com/littlefs-project/littlefs
