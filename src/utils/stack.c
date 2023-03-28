@@ -1,5 +1,7 @@
 #include "stack.h"
 
+// TODO: make it atomic (thread-safe)
+
 #define MAX_STACK_SIZE 128
 
 typedef struct {

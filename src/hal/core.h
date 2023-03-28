@@ -6,6 +6,8 @@
 #include "error.h"
 #include "macros.h"
 
+// TODO: power modes?
+
 typedef enum {
   IRQ_ALL = SIZE_MAX
 } CORE_IRQ_t;

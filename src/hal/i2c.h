@@ -1,4 +1,1 @@
-master blocking
-master non-blocking
-
-slave
+// TODO: Master blocking, master non-blocking and slave?

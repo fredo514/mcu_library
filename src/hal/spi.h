@@ -1,6 +1,8 @@
 #ifndef SPI_H
 #define SPI_H
 
+// TODO: Master blocking, master non-blocking and slave?
+
 #include "stdint.h"
 #include <stdbool.h>
 #include "error.h"
