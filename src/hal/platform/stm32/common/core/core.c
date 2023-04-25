@@ -26,3 +26,19 @@ void Core_Restore_Interrupt(CORE_IRQ_t const IRQn, bool const wasEnabled) {
         } 
     }
 }
+
+tTime getSysTicks(void) { 
+  bool int_state; 
+  tTime ticks; 
+
+  // disable timer interrupt and save state 
+  Int_state = disable_interrupts(); 
+
+  // get ticks 
+  ticks = sysTickTimerCnt_get(); 
+
+  // restore timer interrupt 
+  Restore_interrupts(int_state); 
+
+    return ticks; 
+} 
