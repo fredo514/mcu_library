@@ -1,5 +1,5 @@
-#ifndef EXT_EEPROM_H
-#define EXT_EEPROM_H
+#ifndef GENERIC_JEDEC_EEPROM_H
+#define GENERIC_JEDEC_EEPROM_H
 
 #include "stdint.h"
 #include <stdbool.h>
@@ -28,4 +28,4 @@ ERROR_CODE_t Ext_Ee_Buf_Read(uint32_t const address, uint8_t * const dest, uint8
 ERROR_CODE_t Ext_ee_Reg_Write (EXT_EE_REG_t const reg, uint8_t const val);
 uint8_t Ext_ee_Reg_Read (EXT_EE_REG const reg);
 
-#endif // EXT_EEPROM_H
+#endif // GENERIC_JEDEC_EEPROM_H

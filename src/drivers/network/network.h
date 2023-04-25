@@ -1,0 +1,1 @@
+// only a generic interface to the used stack
