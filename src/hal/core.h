@@ -26,6 +26,8 @@ ERROR_CODE_t Core_Interrupt_Callback_Attach(CORE_IRQ_t const IRQn, void cb(void)
 bool Core_Save_And_Disable_Interrupt(CORE_IRQ_t const IRQn);
 void Core_Restore_Interrupt(CORE_IRQ_t const IRQn, bool const wasEnabled);
 
-uint32_t SysTicks_Get(void);
+uint32_t Core_SysTicks_Get(void);
+
+void Core_Nop(void);
 
 #endif // CORE_H

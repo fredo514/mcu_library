@@ -1,7 +1,6 @@
 #include "core.h"
 #include "core_cm3.h"
 
-
 bool Core_Save_And_Disable_Interrupt(CORE_IRQ_t const IRQn) {
     bool state;
     if (IRQ_ALL == IRQn) {
