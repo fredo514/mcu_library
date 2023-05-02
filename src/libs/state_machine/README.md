@@ -42,29 +42,29 @@ void Sm1_State0_Entry(SM_h sm, void * event) {
     // do some stuff 
 } 
 
-Void Sm1_State0_State(SM_h sm, void * event) { 
-    Switch (event) { 
-        Case SM1_EVENT_0: 
+void Sm1_State0_State(SM_h sm, void * event) { 
+    switch (event) { 
+        case SM1_EVENT_0: 
             // do some stuff 
-        Break; 
+        break; 
 
-        Default: 
-        Break; 
+        default: 
+        break; 
     } 
 } 
 
-Void Sm1_State0_Guard(SM_h sm, void * event) { 
-    Switch (event) { 
-        Case SM1_EVENT_0: 
+void Sm1_State0_Guard(SM_h sm, void * event) { 
+    switch (event) { 
+        case SM1_EVENT_0: 
             // change state 
-        Break; 
+        break; 
 
-        Default: 
-        Break; 
+        default: 
+        vreak; 
     } 
 } 
 
-Void Sm1_State0_Exit(SM_h sm, void * event) { 
+void Sm1_State0_Exit(SM_h sm, void * event) { 
     // do some stuff 
 } 
 ```
