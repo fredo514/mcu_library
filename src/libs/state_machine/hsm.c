@@ -1,19 +1,29 @@
-#include "state_machine.h"
+#include "hsm.h"
 #include "assert.h"
 
-typedef struct { 
-    void (*state_func)(SM_h sm, void * event); 
-    bool (*guard_func)(SM_h sm, void * event); 
-    void (*entry_func)(SM_h sm, void * event); 
-    void (*exit_func)(SM_h sm); 
-} SM_STATE_STRUCT_t; 
+typedef HSM_STATUS_t (*state_handler_funptr)(void * const sm, HSM_EVT_t const * const event);
+typedef HSM_STATUS_t (*action_handler_funptr)(void * const sm);
+
+typedef struct HSM_STATE_INTERNAL { 
+    HSM_STATE_t const * parent;
+    state_handler_funptr const state_handler;
+    state_handler_funptr const guard_func;
+    action_handler_funptr const entry_action;
+    action_handler_funptr const exit_action;
+    action_handler_funptr const init_action;
+} HSM_STATE_INTERNAL_t; 
 
 typedef struct { 
-    SM_STATE_t next_state; 
-    SM_STATE_t current_state; 
+    HSM_STATE_t const target_state;
+    action_handler_funptr const * action_table;
+} HSM_TRAN_ACTION_TABLE_t; 
+
+typedef struct { 
+    HSM_STATE_t next_state; 
+    HSM_STATE_t current_state; 
     void * event_queue; 
-    const SM_STATE_t * state_map; 
-} SM_CTX_t; 
+    const HSM_STATE_t * state_map; 
+} HSM_CTX_t; 
 
 static bool Is_Event_Available(SM_h sm) { 
     return !Ringfifo_IsEmpty(sm->event_queue); 
