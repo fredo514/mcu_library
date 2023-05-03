@@ -5,16 +5,16 @@
 #include "stdbool.h"
 
 typedef enum {
-    SM_STATE_INIT = 0,
-    SM_STATE_BASE_MAX
+    HSM_STATE_INIT = 0,
+    HSM_STATE_USER_DEFINED_START
 } HSM_STATE_t;
 
 typedef enum {
-    SM_SIG_INVALID = 0,
-    SM_SIG_RESET,
-    SM_SIG_ENTRY,
-    SM_SIG_EXIT,
-    SM_SIG_BASE_MAX
+    HSM_SIG_EMPTY = 0,
+    HSM_SIG_INIT,
+    HSM_SIG_ENTRY,
+    HSM_SIG_EXIT,
+    HSM_SIG_USER_DEFINED_START
 } HSM_SIG_t;
 
 typedef enum {
@@ -37,7 +37,7 @@ typedef enum {
     HSM_STATUS_TRAN,        // regular transition
     HSM_STATUS_TRAN_INIT,   // initial transition
     HSM_STATUS_TRAN_ENTRY,  // entry transition
-    HSM_STATUS_TRAN_HIST,   // ??
+    HSM_STATUS_TRAN_HIST,   // transition into last active substate
     HSM_STATUS_TRAN_EXIT,   // exit transition
     HSM_STATUS_MAX
 } HSM_STATUS_t;

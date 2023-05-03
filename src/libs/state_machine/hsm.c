@@ -18,10 +18,22 @@ typedef struct {
     action_handler_funptr const * action_table;
 } HSM_TRAN_ACTION_TABLE_t; 
 
+typedef union {
+    state_handler_funptr state_handler;
+    action_handler_funptr action_handler;
+    HSM_TRAN_ACTION_TABLE_t const * tran_action_table;
+    HSM_STATE_t const * state;
+} HSM_MEMBER_UNION_t;
+
 typedef struct { 
+    void (*init)(HSM_h sm, void const * const event);
+    void (*dispatch)(HSM_h sm, void const * const event);
+    HSM_MEMBER_UNION_t state;
+    HSM_MEMBER_UNION_t temp;
+    
     HSM_STATE_t next_state; 
     HSM_STATE_t current_state; 
-    void * event_queue; 
+    HSM_EVT_t * event_queue; 
     const HSM_STATE_t * state_map; 
 } HSM_CTX_t; 
 
@@ -32,7 +44,7 @@ static bool Is_Event_Available(SM_h sm) {
 static EVENT_t Pop_Event(SM_h sm) { 
     return Ringfifo_Get(sm->event_queue); 
 
-} 
+}
 
 void Sm_Init (SM_h sm, RINGFIFO_h event_queue, SM_STATE_t * pState_map) { 
     sm->state_map = pState_map; 

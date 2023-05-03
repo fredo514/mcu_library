@@ -6,13 +6,13 @@ sm1_state_map.h
 #include "hsm.h"
 
 typedef enum {
-    state_0 = SM_STATE_BASE_MAX,
+    state_0 = HSM_STATE_USER_DEFINED_START,
     ...
     SM1_MAX_NUM_STATES
 } SM1_STATE_t;
 
 typedef enum {
-    SM1_SIG_0 = SM_SIG_BASE_MAX,
+    SM1_SIG_0 = HSM_SIG_USER_DEFINED_START,
     ...
 } SM1_SIG_t;
 
