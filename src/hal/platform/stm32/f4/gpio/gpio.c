@@ -13,29 +13,28 @@ ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config) {
     ASSERT(gpio != 0);   // gpio exists
     ASSERT((gpio->pin >= 0) && (gpio->pin < GPIO_PIN_MAX));   // only 16 pins per port
 
-    REG_SIZE_t mask = 0;
-
     // Find the clock enable bit for the gpio port
     // NOTE: Cannot be tested with mock register structure besause case will not evaluate to constant.
+    uint8_t port_index = 0;
     switch ((int)gpio->port) {
         case (int)GPIO_PORTA:
-            mask = RCC_AHBENR_GPIOAEN;
+            port_index = 0;
         break;
 
         case (int)GPIO_PORTB:
-            mask = RCC_AHBENR_GPIOBEN;
+            port_index = 1;
         break; 
 
         case (int)GPIO_PORTC:
-            mask = RCC_AHBENR_GPIOCEN;
+            port_index = 2;
         break; 
 
         case (int)GPIO_PORTD:
-            mask = RCC_AHBENR_GPIODEN;
+            port_index = 3;
         break; 
 
         case (int)GPIO_PORTF:
-            mask = RCC_AHBENR_GPIOFEN;
+            port_index = 5;
         break; 
 
         default:
@@ -43,36 +42,64 @@ ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config) {
     }
 
     // enable clock for the gpio port
-    Gpio_Reg_Write(RCC->AHBENR, CLEAR_MASK(RCC->AHBENR, mask));       // clear the bits first
-    Gpio_Reg_Write(RCC->AHBENR, SET_MASK(RCC->AHBENR, mask));
+    Gpio_Reg_Write(RCC->AHBENR, SET_MASK(RCC->AHBENR, 1 << port_index));
 
-    // find bit pattern for desired mode
-    mask = 0;
-    switch ((int)config->mode) {
-        case (int)GPIO_OUTPUT:
-            mask = GPIO_MODER_OUTPUT_MASK;
-        break;
+    // configure gpio registers
+    if (((config->mode & GPIO_MODE_MASK) == GPIO_MODE_OUTPUT) || ((config->mode & GPIO_MODE_MASK) == GPIO_MODE_ALT)) {
+        // output speed option is only available for output or alternate mode
+        Gpio_Reg_Write(gpio->port->OSPEEDR, CLEAR_MASK(gpio->port->OSPEEDR, GPIO_OSPEEDR_MASK << (gpio->pin * 2)));       // clear the bits first
+        Gpio_Reg_Write(gpio->port->OSPEEDR, SET_MASK(gpio->port->OSPEEDR, config->speed << (gpio->pin * 2)));
 
-        case (int)GPIO_INPUT:
-            mask = GPIO_MODER_INPUT_MASK;
-        break;
+        // output type option is only available for output or alternate mode
+        Gpio_Reg_Write(gpio->port->OTYPER, SET_MASK(gpio->port->OTYPER, ((config->mode >> GPIO_MODE_TYPE_OFFSET) & GPIO_MODE_MASK) << gpio->pin));
+    }
 
-        case (int)GPIO_MODE_ALT_FUNC:
-            mask = GPIO_MODER_ALT_MASK;
-        break;
+    if (config->mode != GPIO_MODER_ANALOG) {
+        // pull-up/down is not available for analog input mode
+        Gpio_Reg_Write(gpio->port->PUPDR, CLEAR_MASK(gpio->port->PUPDR, GPIO_PUPDR_MASK << (gpio->pin * 2)));       // clear the bits first
+        Gpio_Reg_Write(gpio->port->PUPDR, SET_MASK(gpio->port->PUPDR, config->pull << (gpio->pin * 2)));
+    }
 
-        case (int)GPIO_MODE_ANALOG:
-            mask = GPIO_MODER_AN_MASK;
-        break;
-
-        default:
-            return ERROR_INVALID_PARAM;
+    if ((config->mode & GPIO_MODE_MASK) == GPIO_MODE_ALT) {
+        // configure alternate function
+        Gpio_Reg_Write(gpio->port->AFR[gpio->pin >> 3], \
+                        CLEAR_MASK(gpio->port->AFR[gpio->pin >> 3], GPIO_AFR_MASK << ((gpio->pin & 0x7) * 4)));       // clear the bits first
+        Gpio_Reg_Write(gpio->port->AFR[gpio->pin >> 3], \
+                        SET_MASK(gpio->port->AFR[gpio->pin >> 3], config->alt_function << ((gpio->pin & 0x7) * 4)));
     }
 
     // set the gpio mode
-    Gpio_Reg_Write(gpio->port->MODER, CLEAR_MASK(gpio->port->MODER, GPIO_MODER_MASK << (config->gpio->pin * 2)));       // clear the bits first
-    Gpio_Reg_Write(gpio->port->MODER, SET_MASK(gpio->port->MODER, mask << (config->gpio->pin * 2)));
+    Gpio_Reg_Write(gpio->port->MODER, CLEAR_MASK(gpio->port->MODER, GPIO_MODER_MASK << (gpio->pin * 2)));       // clear the bits first
+    Gpio_Reg_Write(gpio->port->MODER, SET_MASK(gpio->port->MODER, config->mode & GPIO_MODE_MASK << (gpio->pin * 2)));
 
+    if ((config->mode >> GPIO_MODE_EXTI_OFFSET) & GPIO_MODE_MASK) {
+        // configure external interrupt or event
+        // enable syscfg clock
+        Gpio_Reg_Write(RCC->APB2ENR, SET_MASK(RCC->APB2ENR, RCC_APB2ENR_SYSCFGEN));
+
+        // attach exti to gpio port
+        Gpio_Reg_Write(SYSCFG->EXTICR[gpio->pin >> 2], CLEAR_MASK(SYSCFG->EXTICR[gpio->pin >> 2], SYSCFG_EXTICR_MASK << ((gpio->pin & 0x7) * 4)));       // clear the bits first
+        Gpio_Reg_Write(SYSCFG->EXTICR[gpio->pin >> 2], SET_MASK(SYSCFG->EXTICR[gpio->pin >> 2], port_index << ((gpio->pin & 0x7) * 4)));
+
+        // set the rising/falling trigger configutation
+        if (((config->mode >> GPIO_MODE_TRIG_EDGE_OFFSET) & GPIO_MODE_TRIG_RISE) == GPIO_MODE_TRIG_RISE) {
+            Gpio_Reg_Write(EXTI->RTSR, SET_MASK(EXTI->RTSR, 1 << gpio->pin));
+        }
+
+        if (((config->mode >> GPIO_MODE_TRIG_EDGE_OFFSET) & GPIO_MODE_TRIG_FALL) == GPIO_MODE_TRIG_FALL) {
+            Gpio_Reg_Write(EXTI->FTSR, SET_MASK(EXTI->FTSR, 1 << gpio->pin));
+        }
+
+        if (((config->mode >> GPIO_MODE_EXTI_OFFSET) & GPIO_MODE_MASK) == GPIO_MODE_EXTI_EVT) {
+            Gpio_Reg_Write(EXTI->EMR, SET_MASK(EXTI->EMR, 1 << gpio->pin));
+        }
+
+        if (((config->mode >> GPIO_MODE_EXTI_OFFSET) & GPIO_MODE_MASK) == GPIO_MODE_EXTI_IT) {
+            Gpio_Reg_Write(EXTI->IMR, SET_MASK(EXTI->IMR, 1 << gpio->pin));
+        }
+    }
+
+    return SUCCESS;
 }
 
 GPIO_STATE_t Gpio_Read(GPIO_h gpio)

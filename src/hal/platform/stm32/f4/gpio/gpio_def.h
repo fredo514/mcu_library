@@ -1,19 +1,38 @@
 #ifndef GPIO_DEF_H
 #define GPIO_DEF_H
 
+// resgiters settings are encoded in the enum value to simplify the init function
+// bits: | 11 8 | 7    4 | 3   0 |
+//              | otyper | moder |
 typedef enum {
-	GPIO_OUTPUT,
-	GPIO_INPUT,
-	GPIO_MODE_ALT_FUNC,
-	GPIO_MODE_ANALOG,
+	GPIO_INPUT = GPIO_MODER_INPUT,
+
+	GPIO_OUTPUT_OD = (GPIO_MODER_OUTPUT | (GPIO_OTYPER_OD << GPIO_MODE_TYPE_OFFSET)),
+	GPIO_OUTPUT_PP = (GPIO_MODER_OUTPUT | (GPIO_OTYPER_PP << GPIO_MODE_TYPE_OFFSET)),
+
+	GPIO_MODE_ALT_OD = (GPIO_MODER_ALT | GPIO_OTYPER_OD << GPIO_MODE_TYPE_OFFSET)),
+	GPIO_MODE_ALT_PP = (GPIO_MODER_ALT | GPIO_OTYPER_PP << GPIO_MODE_TYPE_OFFSET)),
+
+	GPIO_MODE_ANALOG = GPIO_MODER_ANALOG,
+
+	// Interrupt both send signals and trigger interrupt
+	GPIO_MODE_IT_RISE = (GPIO_MODE_INPUT | (GPIO_MODE_EXTI_IT << GPIO_MODE_EXTI_OFFSET) | (GPIO_MODE_TRIG_RISE << GPIO_MODE_TRIG_EDGE_OFFSET)),     
+	GPIO_MODE_IT_FALL = (GPIO_MODE_INPUT | (GPIO_MODE_EXTI_IT << GPIO_MODE_EXTI_OFFSET) | (GPIO_MODE_TRIG_FALL << GPIO_MODE_TRIG_EDGE_OFFSET)),   
+	GPIO_MODE_IT_RISE_FALL = (GPIO_MODE_INPUT | (GPIO_MODE_EXTI_IT << GPIO_MODE_EXTI_OFFSET) | ((GPIO_MODE_TRIG_RISE | GPIO_MODE_TRIG_FALL) << GPIO_MODE_TRIG_EDGE_OFFSET)),
+	
+    // Events send signals but don't trigger interrupt
+	GPIO_MODE_EVT_RISE = (GPIO_MODE_INPUT | (GPIO_MODE_EXTI_EVT << GPIO_MODE_EXTI_OFFSET) | (GPIO_MODE_TRIG_RISE << GPIO_MODE_TRIG_EDGE_OFFSET)),     
+	GPIO_MODE_EVT_FALL = (GPIO_MODE_INPUT | (GPIO_MODE_EXTI_EVT << GPIO_MODE_EXTI_OFFSET) | (GPIO_MODE_TRIG_FALL << GPIO_MODE_TRIG_EDGE_OFFSET)),   
+	GPIO_MODE_EVT_RISE_FALL = (GPIO_MODE_INPUT | (GPIO_MODE_EXTI_EVT << GPIO_MODE_EXTI_OFFSET) | ((GPIO_MODE_TRIG_RISE | GPIO_MODE_TRIG_FALL) << GPIO_MODE_TRIG_EDGE_OFFSET)),
 	GPIO_MODE_MAX
 } GPIO_MODE_t;
 
 typedef enum {
-	GPIO_PUSH_PULL,
-	GPIO_OPEN_DRAIN,
+	GPIO_SPEED_2MHZ = 0x2,
+	GPIO_SPEED_10MHZ = 0x1,
+	GPIO_SPEED_50MHZ = 0x3,
 	GPIO_DRIVE_MAX
-} GPIO_DRIVE_t;
+} GPIO_SPEED_t;
 
 typedef enum {
 	GPIO_NO_PULL,
@@ -24,19 +43,8 @@ typedef enum {
 
 typedef enum {
 	// see datasheet for part and STM32CUBE hal
+	GPIO_ALT_I2C,
 	GPIO_ALT_FUNC_MAX
 } GPIO_ALT_FUNCTION_t;
-
-typedef enum {
-	// Interrupt both send signals and trigger interrupt
-	GPIO_INT_RISING          = (0x0UL << 0U | (0x1UL << 16U) | (0x1UL << 20U)),               // Rising edge trigger External Interrupt      
-	GPIO_INT_FALLING         = (0x0UL << 0U | (0x1UL << 16U) | (0x2UL << 20U)),               // Falling edge trigger External Interrupt    
-	GPIO_INT_RISING_FALLING  = (0x0UL << 0U | (0x1UL << 16U) | (0x1UL << 20U) | (0x2UL << 20U)),   // Rising/Falling edge trigger External Interrupt
-	
-    // Events send signals but don't trigger interrupt
-	GPIO_EVENT_RISING         = (0x0UL << 0U | (0x2UL << 16U) | (0x1UL << 20U)),                    // Rising edge trigger External Event Mode
-	GPIO_EVENT_FALLING        = (0x0UL << 0U | (0x2UL << 16U) | (0x2UL << 20U)),                    // Falling edge trigger External Event Mode
-	GPIO_EVENT_RISING_FALLING = (0x0UL << 0U | (0x2UL << 16U) | (0x1UL << 20U) | (0x2UL << 20U))    // Rising/Falling edge trigger External Event Mode
-} GPIO_INT_MODE_t;
 
 #endif // GPIO_DEF_H

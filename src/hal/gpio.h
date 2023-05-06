@@ -36,11 +36,10 @@ typedef GPIO_CTX_t const * const GPIO_h;
 
 typedef struct {
     GPIO_MODE_t mode;
+	GPIO_STATE_t init_state;
+	GPIO_ALT_FUNCTION_t alt_function;
     GPIO_PULL_t pull;
-	GPIO_DRIVE_t drive;
-    GPIO_STATE_t init_state;
-    GPIO_ALT_FUNCTION_t alt_function;
-	GPIO_INT_MODE_t int_mode;
+	GPIO_SPEED_t speed;
 } GPIO_CONFIG_t;
 
 ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config);
