@@ -67,24 +67,24 @@ bool Sm_dispatch (SM_h sm) {
 
         void * event = pop_event(sm); 
         if (event != SM_EVENT_INVALID) { 
-        if (guard != NULL) { 
-            guard_result = guard(sm, event); 
-        } 
-
-        if (guard_result) { 
-            if (sm->next_state != sm->current_state) { 
-            if (exit != NULL) { 
-                exit(sm, event); 
+            if (guard != NULL) { 
+                guard_result = guard(sm, event); 
             } 
 
-            if (entry != NULL) { 
-                entry(sm, event); 
-            } 
-            } 
+            if (guard_result) { 
+                if (sm->next_state != sm->current_state) { 
+                    if (exit != NULL) { 
+                        exit(sm, event); 
+                    } 
 
-            sm->current_state = sm->next_state; 
-            state(sm, event); 
-        } 
+                    if (entry != NULL) { 
+                        entry(sm, event); 
+                    } 
+                } 
+
+                sm->current_state = sm->next_state; 
+                state(sm, event); 
+            } 
         } 
 
         return true;

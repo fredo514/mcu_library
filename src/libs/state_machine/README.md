@@ -16,6 +16,11 @@ typedef enum {
     ...
 } SM1_SIG_t;
 
+typedef {
+    HSM_EVT_t base_event;
+    uint8_t event_data;
+} SM1_EVENT1_t;
+
 void Sm1_Init_Entry (SM_h sm, void * event);
 void Sm1_Init_State (SM_h sm, void * event);
 void Sm1_Init_Guard (SM_h sm, void * event);

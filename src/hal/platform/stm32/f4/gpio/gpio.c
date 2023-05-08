@@ -180,10 +180,10 @@ ERROR_CODE_t Gpio_Toggle(GPIO_h gpio)
     return ret;
 }
 
-ERROR_CODE_t Gpio_Reg_Write (REG_SIZE_t const address, uint32_t const val) {
+ERROR_CODE_t inline Gpio_Reg_Write (REG_SIZE_t const address, uint32_t const val) {
     *((REG_SIZE_t * const)address) = val;
 }
 
-REG_SIZE_t Gpio_Reg_Read (REG_SIZE_t const address) {
+REG_SIZE_t inline Gpio_Reg_Read (REG_SIZE_t const address) {
     return *((REG_SIZE_t * const)address);
 }
