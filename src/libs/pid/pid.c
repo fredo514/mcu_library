@@ -2,13 +2,14 @@
 
 typedef struct {
     PID_DATA_t last_output;
+    PID_DATA_t setpoint;
+    
     PID_DATA_t p_gain;
     PID_DATA_t i_gain;
     PID_DATA_t d_gain; 
     PID_DIRECTION_t direction;
     PID_MODE_t mode;
     float p_on_m_weight;
-    PID_DATA_t (*error_callback)(PID_DATA_t setpoint, PID_DATA_t input);
 
     // for integral
     PID_DATA_t i_term;
@@ -19,6 +20,8 @@ typedef struct {
     // for windup Clamping
     PID_DATA_t max_output;
     PID_DATA_t min_output;
+
+    PID_DATA_t (*error_callback)(PID_DATA_t setpoint, PID_DATA_t input);
 } PID_CTX_t;
 
 static PID_DATA_t Simple_Error(PID_DATA_t setpoint, PID_DATA_t input);
