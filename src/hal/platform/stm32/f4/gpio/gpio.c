@@ -9,8 +9,8 @@ typedef struct
 } GPIO_CTX_t;
 
 ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config) {
-    ASSERT(config != 0);   // config exists
-    ASSERT(gpio != 0);   // gpio exists
+    ASSERT(config);   // config exists
+    ASSERT(gpio);   // gpio exists
     ASSERT((gpio->pin >= 0) && (gpio->pin < GPIO_PIN_MAX));   // only 16 pins per port
 
     // Find the clock enable bit for the gpio port
