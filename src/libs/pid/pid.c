@@ -35,20 +35,10 @@ ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     ASSERT(config->min_output < config->max_output);  
 
     pid->action = config->action;
-    // invert gains if reverse
-    if(pid->action == PID_ACTION_DIRECT) {
-        pid->p_gain = config->kp;
-        pid->i_gain = config->ki;
-        pid->d_gain = config->kd;
-    }
-    else if (pid->action == PID_ACTION_REVERSE) {
-        pid->p_gain = -(config->kp);
-        pid->i_gain = -(config->ki);
-        pid->d_gain = -(config->kd);
-    }
-    else {
-        return ERROR_INVALID_PARAM;
-    }
+
+    pid->p_gain = config->kp;
+    pid->i_gain = config->ki;
+    pid->d_gain = config->kd;
 
     pid->mode = config->mode;
     pid->p_on_m_weight = config->p_on_m_weight;
