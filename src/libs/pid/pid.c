@@ -128,7 +128,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
 
     pid->last_input = input;
 
-    return pid->last_output;
+    return output;
 }
 
 PID_DATA_t Pid_Output_Get(PID_h pid) {
