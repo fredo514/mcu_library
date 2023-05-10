@@ -83,6 +83,7 @@ ERROR_CODE_t Pid_Error_Callback_Register(PID_h pid, PID_DATA_t (*error_calc_cb)(
 PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
     if (pid->mode == PID_MODE_ACTIVE) {
         PID_DATA_t output = 0;
+        PID_DATA_t p_on_m_term = 0;
         
         PID_DATA_t error = pid->error_calc_cb(pid->setpoint, input);
         PID_DATA_t input_deriv = input - pid->last_input;
@@ -95,16 +96,19 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         // Calculate proportional terms
         if (pid->p_on_m_weight > 0) {
             // In proportional-on-measurement mode, the proportional gain resists change
-            pid->i_term -= pid->p_on_m_weight * pid->p_gain * input_deriv;
-            Clamp(pid, &(pid->i_term));
+            p_on_m_term = pid->p_on_m_weight * pid->p_gain * input_deriv;
+            output -= p_on_m_term;
 
-            output += pid->i_term;
+            // should we be updating i_term for p_on_m here instead?
         }
         
         if (pid->p_on_m_weight < 1) {
             // In proportional-on-error mode, the proportional gain reacts to error
             output += (1 - pid->p_on_m_weight) * pid->p_gain * error;
         }
+        
+        // add in integral sum
+        output += pid->i_term;
 
         // Calculate derivative term using derivative on measurement to avoid derivative kick
         // d_term is negative due to using derivative on measurement
@@ -114,10 +118,11 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         Clamp(&output);
         pid->last_output = output;
 
-        // Calculate intergral term at the end for faster response time
+        // Update intergral sum at the end for faster response time
         // Clamp to avoid windup
         // Store computed term to avoid bump when changing the integral gain
         pid->i_term += pid->i_gain * error;
+        pid->i_term -= p_on_m_term;
         Clamp(pid, &(pid->i_term));
     }    
 
