@@ -7,7 +7,7 @@ typedef struct {
     PID_DATA_t p_gain;
     PID_DATA_t i_gain;
     PID_DATA_t d_gain; 
-    PID_DIRECTION_t direction;
+    PID_ACTION_t action;
     PID_MODE_t mode;
     float p_on_m_weight;
 
@@ -21,7 +21,7 @@ typedef struct {
     PID_DATA_t max_output;
     PID_DATA_t min_output;
 
-    PID_DATA_t (*error_callback)(PID_DATA_t setpoint, PID_DATA_t input);
+    PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input);
 } PID_CTX_t;
 
 static PID_DATA_t Simple_Error(PID_DATA_t setpoint, PID_DATA_t input);
@@ -32,29 +32,32 @@ ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     ASSERT(config->kp >= 0);
     ASSERT(config->ki >= 0);
     ASSERT(config->kd >= 0);
-    assert(config->min_output < config->max_output);  
+    ASSERT(config->min_output < config->max_output);  
 
-    pid->direction = config->direction;
+    pid->action = config->action;
     // invert gains if reverse
-    if(pid->direction == PID_DIR_DIRECT) {
+    if(pid->action == PID_ACTION_DIRECT) {
         pid->p_gain = config->kp;
         pid->i_gain = config->ki;
         pid->d_gain = config->kd;
     }
-    else {
+    else if (pid->action == PID_ACTION_REVERSE) {
         pid->p_gain = -(config->kp);
         pid->i_gain = -(config->ki);
         pid->d_gain = -(config->kd);
+    }
+    else {
+        return ERROR_INVALID_PARAM;
     }
 
     pid->mode = config->mode;
     pid->p_on_m_weight = config->p_on_m_weight;
     
-    if (config->error_callback) {
-        pid->error_callback = config->error_callback;
+    if (config->error_calc_cb) {
+        pid->error_calc_cb = config->error_calc_cb;
     }
     else {
-        pid->error_callback = &Simple_Error;
+        pid->error_calc_cb = &Simple_Error;
     }
 }
 
@@ -66,15 +69,18 @@ ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, flo
     ASSERT(p_on_m_weight <= 1);
 
     // invert gains if reverse
-    if(pid->direction == PID_DIR_DIRECT) {
+    if(pid->action == PID_ACTION_DIRECT) {
         pid->p_gain = kp;
         pid->i_gain = ki;
         pid->d_gain = kd;
     }
-    else {
+    else if (pid->action == PID_ACTION_REVERSE) {
         pid->p_gain = -kp;
         pid->i_gain = -ki;
         pid->d_gain = -kd;
+    }
+    else {
+        return ERROR_INVALID_PARAM;
     }
 
     pid->p_on_m_weight = p_on_m_weight;
@@ -82,14 +88,14 @@ ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, flo
     return NO_ERROR;
 }
 
-ERROR_CODE_t Pid_Error_Callback_Register(PID_h pid, PID_ERROR_t (*error_callback)(PID_DATA_t setpoint, PID_DATA_t input)) {
+ERROR_CODE_t Pid_Error_Callback_Register(PID_h pid, PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input)) {
     ASSERT(pid);
 
-    if (error_callback) {
-        pid->error_callback = error_callback;
+    if (error_calc_cb) {
+        pid->error_calc_cb = error_calc_cb;
     }
     else {
-        pid->error_callback = &Simple_Error;
+        pid->error_calc_cb = &Simple_Error;
     }
 
     return NO_ERROR;
@@ -99,7 +105,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
     if (pid->mode == PID_MODE_ACTIVE) {
         PID_DATA_t output = 0;
         
-        PID_DATA_t error = pid->Error_Callback(pid->setpoint, input);
+        PID_DATA_t error = pid->error_calc_cb(pid->setpoint, input);
         PID_DATA_t input_deriv = input - pid->last_input;
 
         // Calculate proportional terms
@@ -163,15 +169,15 @@ PID_MODE_t Pid_Mode_Get(PID_h pid) {
     return pid->mode;
 }
 
-ERROR_CODE_t Pid_Direction_Set(PID_h pid, PID_DIRECTION_t direction) {
+ERROR_CODE_t Pid_Action_Set(PID_h pid, PID_ACTION_t action) {
     // invert gains if changing direction
-    if(pid->direction != direction) {
+    if(pid->action != action) {
         pid->p_gain = -(pid->p_gain);
         pid->i_gain = -(pid->p_gain);
         pid->d_gain = -(pid->p_gain);
     }
 
-    pid->direction = direction;
+    pid->action = action;
 
     return NO_ERROR;
 }

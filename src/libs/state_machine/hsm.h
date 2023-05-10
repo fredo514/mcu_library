@@ -51,7 +51,7 @@ typedef HSM_CTX_t const * const HSM_h;
 void Hsm_Init (HSM_h sm, HSM_STATE_t const * const state_map); 
 
 bool Hsm_Dispatch(HSM_h sm); 
-ERROR_t Hsm_Post_Event(HSM_h sm, void * event);
+ERROR_CODE_t Hsm_Post_Event(HSM_h sm, void * event);
 HSM_STATE_t Sm_State_Get(HSM_h sm)
 
 #endif // HSM_H
