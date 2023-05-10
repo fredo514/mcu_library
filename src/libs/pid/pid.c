@@ -68,20 +68,9 @@ ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, flo
     ASSERT(p_on_m_weight >= 0);
     ASSERT(p_on_m_weight <= 1);
 
-    // invert gains if reverse
-    if(pid->action == PID_ACTION_DIRECT) {
-        pid->p_gain = kp;
-        pid->i_gain = ki;
-        pid->d_gain = kd;
-    }
-    else if (pid->action == PID_ACTION_REVERSE) {
-        pid->p_gain = -kp;
-        pid->i_gain = -ki;
-        pid->d_gain = -kd;
-    }
-    else {
-        return ERROR_INVALID_PARAM;
-    }
+    pid->p_gain = kp;
+    pid->i_gain = ki;
+    pid->d_gain = kd;
 
     pid->p_on_m_weight = p_on_m_weight;
     
@@ -107,6 +96,11 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         
         PID_DATA_t error = pid->error_calc_cb(pid->setpoint, input);
         PID_DATA_t input_deriv = input - pid->last_input;
+
+        if (pid->action == PID_ACTION_REVERSE) {
+            input_deriv = -input_deriv;
+            error = -error;
+        }
 
         // Calculate proportional terms
         if (pid->p_on_m_weight > 0) {
@@ -170,13 +164,6 @@ PID_MODE_t Pid_Mode_Get(PID_h pid) {
 }
 
 ERROR_CODE_t Pid_Action_Set(PID_h pid, PID_ACTION_t action) {
-    // invert gains if changing direction
-    if(pid->action != action) {
-        pid->p_gain = -(pid->p_gain);
-        pid->i_gain = -(pid->p_gain);
-        pid->d_gain = -(pid->p_gain);
-    }
-
     pid->action = action;
 
     return NO_ERROR;
