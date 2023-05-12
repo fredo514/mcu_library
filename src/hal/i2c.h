@@ -57,9 +57,7 @@ typedef enum {
     I2C_STATUS_MAX
 } I2C_STATUS_t;
 
-typedef I2C_CTX_t const * const I2C_h;
-I2C_h i2c1 = {.i2c_regs=I2C1};
-I2C_h i2c2 = {.i2c_regs=I2C2};
+typedef struct I2C_CTX const * const I2C_h;
 
 typedef struct {
     I2C_MODE_t mode;
@@ -71,14 +69,15 @@ typedef struct {
     I2C_ADDRESS_MODE_t address_mode;
 } I2C_CONFIG_t;
 
+I2C_h I2c_Create(I2C_TypeDef const * const instance);
 ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config);
 ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void (*cb)(I2C_h i2c));
 
-ERROR_CODE_t I2c_Master_Write(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options)
-ERROR_CODE_t I2c_Master_Read(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options)
-ERROR_CODE_t I2c_Master_Abort(I2C_h i2c)
-ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c)
-ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c)
+ERROR_CODE_t I2c_Master_Write(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options);
+ERROR_CODE_t I2c_Master_Read(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options);
+ERROR_CODE_t I2c_Master_Abort(I2C_h i2c);
+ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c);
+ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c);
 
 // Use these SPARINGLY to extend the API
 ERROR_CODE_t I2c_Reg_Write (REG_SIZE_t * const address, uint32_t const val);
