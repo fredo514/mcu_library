@@ -11,4 +11,8 @@
 
 // GPIO_PORT_t * const PORTA = (GPIO_PORT_t*)0xCAFECAFE;
 
+#define I2C_DUAL_ADDRESS
+#define I2C1 ((I2C_TypeDef *) I2C1_BASE)
+#define I2C2 ((I2C_TypeDef *) I2C2_BASE)
+
 uint32_t Sysclk_Get_Hz(void);
