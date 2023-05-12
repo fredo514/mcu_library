@@ -52,17 +52,17 @@ static void Irq_Er_Handler(I2C_h i2c) {
 }
 
 void I2C1_EV_IRQHandler(void) {
-    Irq_Er_Handler(i2c1);
+    Irq_Ev_Handler(i2c1);
 }
 
 void I2C1_EV_IRQHandler(void) {
-    Irq_Ev_Handler(i2c1);
+    Irq_Er_Handler(i2c1);
 }
 
 void I2C2_EV_IRQHandler(void) {
-    Irq_Er_Handler(i2c2);
+    Irq_Ev_Handler(i2c2);
 }
 
 void I2C1_ER_IRQHandler(void) {
-    Irq_Ev_Handler(i2c1);
+    Irq_Er_Handler(i2c1);
 }
