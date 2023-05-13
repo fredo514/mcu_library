@@ -18,14 +18,14 @@ typedef enum {
 } I2C_ADDRESS_MODE_t;
 
 typedef enum {
-    I2C_MASTER_TX_DONE_CB_ID,
-    I2C_MASTER_RX_DONE_CB_ID,
-    I2C_SLAVE_TX_DONE_CB_ID,
-    I2C_SLAVE_RX_DONE_CB_ID,
-    I2C_LISTEN_DONE_CB_ID,
-    I2C_ADDRESS_MATCH_CB_ID,
-    I2C_ERROR_CB_ID,
-    I2C_ABORT_DONE_CB_ID,
+    I2C_MASTER_TX_DONE_CALLBACK,
+    I2C_MASTER_RX_DONE_CALLBACK,
+    I2C_SLAVE_TX_DONE_CALLBACK,
+    I2C_SLAVE_RX_DONE_CALLBACK,
+    I2C_LISTEN_DONE_CALLBACK,
+    I2C_ADDRESS_MATCH_CALLBACK,
+    I2C_ERROR_CALLBACK,
+    I2C_ABORT_DONE_CALLBACK,
     I2C_CB_ID_MAX
 } I2C_CALLBACK_ID_t;
 
@@ -72,6 +72,7 @@ typedef struct {
 I2C_h I2c_Create(I2C_TypeDef const * const instance);
 ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config);
 ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void (*cb)(I2C_h i2c));
+I2C_STATUS_t I2c_Status_Get(I2C_h i2c);
 
 ERROR_CODE_t I2c_Master_Write(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options);
 ERROR_CODE_t I2c_Master_Read(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options);

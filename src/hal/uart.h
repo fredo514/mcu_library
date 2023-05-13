@@ -6,8 +6,6 @@
 #include "error.h"
 #include "uart_def.h"	// contains platform-specific defines
 
-typedef UART_CTX_t * const UART_h;
-
 typedef enum {
     UART_9K6_BAUD = 9600,
     UART_57K6_BAUD = 57600,
@@ -40,14 +38,6 @@ typedef enum {
 
 } UART_MODE_t;
 
-typedef struct {
-    UART_BAUD_RATE_t baud_rate;
-    UART_WORD_LEN_t word_length;
-    UART_STOP_BITS_t stop_bits;
-    UART_PARITY_t parity;
-    UART_MODE_t mode;
-} UART_CONFIG_t;
-
 typedef enum {
     UART_TX_HALFCOMPLETE_CALLBACK,
     UART_TX_COMPLETE_CALLBACK,
@@ -57,6 +47,17 @@ typedef enum {
     UART_ABORT_COMPLETE_CALLBACK,
 } UART_CALLBACK_t;
 
+typedef UART_CTX_t * const UART_h;
+
+typedef struct {
+    UART_BAUD_RATE_t baud_rate;
+    UART_WORD_LEN_t word_length;
+    UART_STOP_BITS_t stop_bits;
+    UART_PARITY_t parity;
+    UART_MODE_t mode;
+} UART_CONFIG_t;
+
+UART_h Uart_Create(UART_TypeDef const * const instance);
 ERROR_CODE_t Uart_Init(UART_h uart, UART_CONFIG_t const * const config);
 ERROR_CODE_t Uart_Callback_Register(UART_h uart, UART_CALLBACK_t const function, void (*cb)(UART_h uart));  // really need this?
 
