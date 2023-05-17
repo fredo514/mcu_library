@@ -42,6 +42,7 @@ typedef struct {
 	GPIO_SPEED_t speed;
 } GPIO_CONFIG_t;
 
+GPIO_h Gpio_Create(GPIO_PORT_t const * const port, GPIO_PIN_t const pin);
 ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config);
 ERROR_CODE_t Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK_t const function, void (*cb)(void));  // really need this?
 ERROR_CODE_t Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE_t const mode);

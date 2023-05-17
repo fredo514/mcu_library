@@ -2,11 +2,18 @@
 #include "stm32_hal.h"
 #include "assert.h"
 
-typedef struct
-{
-    GPIO_PORT_t * const port;
+typedef struct GPIO_CTX {
+    GPIO_REGS_t const * const port;
     GPIO_PIN_t const pin;
-} GPIO_CTX_t;
+};
+
+GPIO_h Gpio_Create(GPIO_PORT_t const * const port, GPIO_PIN_t const pin) {
+    GPIO_h inst = calloc(1, sizeof(struct GPIO_CTX));
+    inst->port = port;
+    inst->pin = pin;
+
+    return inst;
+}
 
 ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config) {
     ASSERT(config);   // config exists

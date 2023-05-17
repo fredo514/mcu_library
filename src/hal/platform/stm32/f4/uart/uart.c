@@ -1,5 +1,5 @@
 #include "uart.h"
 
-typedef struct {
+typedef struct UART_CTX {
     
-} UART_CTX_t;
+};

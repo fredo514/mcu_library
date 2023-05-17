@@ -2,7 +2,7 @@
 #include "stdint.h"
 
 typedef struct I2C_CTX {
-    I2C_TypeDef const * const instance;
+    I2C_REGS_t const * const regs;
     I2C_MODE_t mode;
     uint8_t * buffer_ptr;
     I2C_STATUS_t status;
@@ -20,9 +20,9 @@ typedef struct I2C_CTX {
 static void Irq_Ev_Handler(I2C_h i2c);
 static void Irq_Er_Handler(I2C_h i2c);
 
-I2C_h I2c_Create(I2C_TypeDef const * const instance) {
+I2C_h I2c_Create(I2C_REGS_t const * const regs) {
     I2C_h inst = calloc(1, sizeof(struct I2C_CTX));
-    inst->instance = instance;
+    inst->regs = regs;
     inst->status = I2C_STATUS_RESET;
 
     return inst;

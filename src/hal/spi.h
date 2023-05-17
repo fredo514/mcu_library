@@ -21,6 +21,7 @@ typedef struct {
     GPIO_STATE cs_idle;
 } SPI_CONFIG_t;
 
+SPI_h Spi_Create(SPI_TypeDef const * const instance);
 ERROR_CODE_t Spi_Init(SPI_h spi, SPI_CONFIG_t const * const config);
 ERROR_CODE_t Spi_Callback_Register(SPI_h spi, SPI_CALLBACK_t const function, void (*cb)(void));  // really need this?
 

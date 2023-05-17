@@ -21,6 +21,7 @@ typedef struct {
     bool autoreload;
 } TIMER_CONFIG_t;
 
+TIMER_h Timer_Create(TIMER_TypeDef const * const instance);
 ERROR_CODE_t Timer_Init(TIMER_h timer, TIMER_CONFIG_t const * const config);
 ERROR_CODE_t Timer_Callback_Register(TIMER_h timer, TIMER_CALLBACK_t const function, void (*cb)(void));  // really need this?
 
