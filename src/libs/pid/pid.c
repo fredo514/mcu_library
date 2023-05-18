@@ -81,8 +81,9 @@ ERROR_CODE_t Pid_Error_Callback_Register(PID_h pid, PID_DATA_t (*error_calc_cb)(
 }
 
 PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
+    PID_DATA_t output = 0;
+    
     if (pid->mode == PID_MODE_ACTIVE) {
-        PID_DATA_t output = 0;
         PID_DATA_t p_on_m_term = 0;
         
         PID_DATA_t error = pid->error_calc_cb(pid->setpoint, input);
