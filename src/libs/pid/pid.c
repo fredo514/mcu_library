@@ -115,7 +115,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         output -= pid->d_gain * input_deriv;
 
         // Clamp to avoid windup and store
-        Clamp(&output);
+        output = Clamp(pid, output);
         pid->last_output = output;
 
         // Update intergral sum at the end for faster response time
@@ -123,7 +123,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         // Store computed term to avoid bump when changing the integral gain
         pid->i_term += pid->i_gain * error;
         pid->i_term -= p_on_m_term;
-        Clamp(pid, &(pid->i_term));
+        pid->i_term = Clamp(pid, pid->i_term);
     }    
 
     pid->last_input = input;
@@ -146,7 +146,7 @@ ERROR_CODE_t Pid_Resume(PID_h pid) {
     // need to preload intergral term to avoid bump when exiting override mode
     if (pid->mode == PID_MODE_OVERRIDE) {
         pid->i_term = pid->last_output;
-        Clamp(pid, &(pid->i_term));
+        pid->i_term = Clamp(pid, pid->i_term);
     }
     
     pid->mode = PID_MODE_ACTIVE;
@@ -168,11 +168,13 @@ static PID_DATA_t Simple_Error(PID_DATA_t setpoint, PID_DATA_t input) {
     return setpoint - input;
 }
 
-static void Clamp(PID_h pid, PID_DATA_t * const val) {
-    if (*val > pid->max_output) {
-        *val = pid->max_output;
+static inline PID_DATA_t Clamp(PID_h pid, PID_DATA_t const val) {
+    if (val > pid->max_output) {
+        return pid->max_output;
     }
-    else if (*val < pid->min_output) {
-        *val = pid->min_output;
+    else if (val < pid->min_output) {
+        return pid->min_output;
     } 
+
+    return val;
 }
