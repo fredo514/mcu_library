@@ -7,4 +7,4 @@ The error is computed `setpoint-input` by default (`error_callback = NULL`). If 
 
 For integrating processes (that always overshoot no matter the tuning), proportional-on-measurement mode can be used. Use 0 <= setpoint weigth <= 1 to use a little bit of both proportional-on-error and proportional-on-measurement for processes that are not entirely integrating.
 
-Use `min_output` config parameter to set an offset to compensate an actuator deadband.
+Use `min_output` config parameter to inject a bias to compensate any constant offset (e.g. actuator deadband).
