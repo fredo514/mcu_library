@@ -100,7 +100,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
             p_on_m_term = pid->p_on_m_weight * pid->p_gain * input_deriv;
             output -= p_on_m_term;
 
-            // should we be updating i_term for p_on_m here instead?
+            // should i_term be updated here for p_on_m instead?
         }
         
         if (pid->p_on_m_weight < 1) {
