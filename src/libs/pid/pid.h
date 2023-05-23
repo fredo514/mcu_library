@@ -7,6 +7,8 @@
 
 typedef PID_DATA_t float;
 
+#define PID_SIMPLE_ERROR_CB 0
+
 typedef enum {
     PID_MODE_ACTIVE = 0,
     PID_MODE_OVERRIDE,
@@ -23,6 +25,7 @@ typedef struct {
     PID_DATA_t kp;
     PID_DATA_t ki;
     PID_DATA_t kd;
+    PID_DATA_t alpha;
     PID_DATA_t max_output;
     PID_DATA_t min_output;
     PID_ACTION_t action;

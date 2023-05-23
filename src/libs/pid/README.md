@@ -1,4 +1,7 @@
-# General Usage
+# Introduction
+The algorithm implemented is the independant form PID with controller output filter.
+
+# Usage
 Sample at 1/10 to 1/100 of the process settling time.
 * Use faster sampling rate if you have a process difficult to control, high Kd gain or need high accuracy (up to 1/1000 settling time if not using derivative).
 * Sample rate should be stable (<1-5% deviation over 10 samples, >1% all the time if using derivative).
@@ -8,3 +11,8 @@ The error is computed `setpoint-input` by default (`error_callback = NULL`). If 
 For integrating processes (that always overshoot no matter the tuning), proportional-on-measurement mode can be used. Use 0 <= setpoint weigth <= 1 to use a little bit of both proportional-on-error and proportional-on-measurement for processes that are not entirely integrating.
 
 Use `min_output` config parameter to inject a bias to compensate any constant offset (e.g. actuator deadband).
+
+#Tuning
+PI is sufficient most of the time (Kd=0, a=0).
+PID can sometimes help get marginally better performance when tuning aggressively.
+CO filter is rarely needed. Only potential for benefit in loops with noise and/or delicate mechanical actuators.

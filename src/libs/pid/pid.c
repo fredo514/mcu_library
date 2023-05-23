@@ -39,6 +39,7 @@ ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     pid->p_gain = config->kp;
     pid->i_gain = config->ki;
     pid->d_gain = config->kd;
+    pid->alpha = config->alpha;
 
     pid->mode = config->mode;
     pid->p_on_m_weight = config->p_on_m_weight;
@@ -51,7 +52,7 @@ ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     }
 }
 
-ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, float p_on_m_weight) {
+ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, PID_DATA_t alpha, float p_on_m_weight) {
     ASSERT(kp >= 0);
     ASSERT(ki >= 0);
     ASSERT(kd >= 0);
@@ -61,6 +62,7 @@ ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, flo
     pid->p_gain = kp;
     pid->i_gain = ki;
     pid->d_gain = kd;
+    pid->alpha = alpha;
 
     pid->p_on_m_weight = p_on_m_weight;
     
@@ -86,6 +88,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
     if (pid->mode == PID_MODE_ACTIVE) {
         PID_DATA_t p_on_m_term = 0;
         
+        // TODO: add optional setpoint 1st-order filter
         PID_DATA_t error = pid->error_calc_cb(pid->setpoint, input);
         PID_DATA_t input_deriv = input - pid->last_input;
 
@@ -100,7 +103,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
             p_on_m_term = pid->p_on_m_weight * pid->p_gain * input_deriv;
             output -= p_on_m_term;
 
-            // should i_term be updated here for p_on_m instead?
+            // should i_term be updated for p_on_m here instead?
         }
         
         if (pid->p_on_m_weight < 1) {
@@ -114,9 +117,11 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         // Calculate derivative term using derivative on measurement to avoid derivative kick
         // d_term is negative due to using derivative on measurement
         output -= pid->d_gain * input_deriv;
+        // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
 
         // Clamp to avoid windup and store
         output = Clamp(pid, output);
+        output = pid->last_output + ((sampling_period / (pid->alpha * pid->Kd / pid->Kp)) * (output - pid->last_output));
         pid->last_output = output;
 
         // Update intergral sum at the end for faster response time
