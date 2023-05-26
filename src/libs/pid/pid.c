@@ -115,12 +115,14 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         output += pid->i_term;
 
         // Calculate derivative term using derivative on measurement to avoid derivative kick
-        // d_term is negative due to using derivative on measurement
-        output -= pid->d_gain * input_deriv;
         // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
+        pid->last_deriv = pid->last_deriv + (α * ((pid->d_gain * input_deriv) - pid->last_deriv));
+        // d_term is negative due to using derivative on measurement
+        output -= pid->last_deriv;
 
         // Clamp to avoid windup and store
         output = Clamp(pid, output);
+        // CO filter
         output = pid->last_output + ((sampling_period / (pid->alpha * pid->Kd / pid->Kp)) * (output - pid->last_output));
         pid->last_output = output;
 
