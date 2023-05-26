@@ -48,10 +48,10 @@ typedef struct {
 typedef HSM_STATE_INTERNAL_t HSM_STATE_t;
 typedef HSM_CTX_t const * const HSM_h;
 
-void Hsm_Init (HSM_h sm, HSM_STATE_t const * const state_map); 
+HSM_h Hsm_Create(void);
+ERROR_CODE_t Hsm_Init (HSM_h sm, HSM_STATE_t const * const state_map); 
 
-bool Hsm_Dispatch(HSM_h sm); 
-ERROR_CODE_t Hsm_Post_Event(HSM_h sm, void * event);
+bool Hsm_Dispatch(HSM_h sm, HSM_EVT_t * event); 
 HSM_STATE_t Sm_State_Get(HSM_h sm)
 
 #endif // HSM_H
