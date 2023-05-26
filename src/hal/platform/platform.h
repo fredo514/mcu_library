@@ -4,3 +4,5 @@
 // processor data bus size
 // endianess
 // aligned access (for casting)
+
+ERROR_CODE_t Platform_Init(void);

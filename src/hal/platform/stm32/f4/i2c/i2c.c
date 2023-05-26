@@ -131,6 +131,14 @@ static void Irq_Er_Handler(I2C_h i2c) {
 
 }
 
+ERROR_CODE_t inline I2c_Reg_Write (REG_SIZE_t const address, uint32_t const val) {
+    *((REG_SIZE_t * const)address) = val;
+}
+
+REG_SIZE_t inline I2c_Reg_Read (REG_SIZE_t const address) {
+    return *((REG_SIZE_t * const)address);
+}
+
 void I2C1_EV_IRQHandler(void) {
     if (i2c1.regs->ISR & (I2C_ISR_BERR | I2C_ISR_ARLO | I2C_ISR_OVR)) {
 		// handle error
