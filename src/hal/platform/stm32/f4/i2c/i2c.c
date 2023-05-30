@@ -211,9 +211,6 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 
         // else check if transmitting
         else if (i2c->regs->ISR & I2C_ISR_TXIS) {
-            // clear transmit interrupt
-            i2c->regs->ICR |= I2C_ISR_TXIS;
-            
             if (index < i2c->buf_len) {
                 // place next data from buffer in DR
 		        i2c->regs->TXDR = i2c->buffer_ptr[index];
@@ -227,9 +224,6 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 
         // else then receiving
         else {
-            // clear receive interrupt
-            i2c->regs->ICR |= I2C_ISR_RXNE;
-
             // store DR in buffer
             if (index < i2c->buf_len) {
                 i2c->buffer_ptr[index] = i2c->regs->RXDR;
