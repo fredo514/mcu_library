@@ -7,7 +7,7 @@
 #define READ_BIT(REG, BIT)    ((REG) & (1<<(BIT)))
 
 #define SET_MASK(REG, MASK)     ((REG) |= (MASK))
-#define CLEAR_MASK(REG, BIT)   ((REG) &= ~(MASK))
+#define CLEAR_MASK(REG, MASK)   ((REG) &= ~(MASK))
 #define READ_MASK(REG, MASK)    ((REG) & (MASK))
 
 // unique temporary variable name for macros

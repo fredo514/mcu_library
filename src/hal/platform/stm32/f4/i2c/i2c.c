@@ -24,26 +24,78 @@ I2C_h I2c_Create(I2C_REGS_t const * const regs) {
 }
 
 ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
-    // configure i2c interrupts
-    // enable clock for pins and i2c peripheral
-    // set speed
-    // set addresses
-    // configure CR1 and CR2
+    // Disable the selected I2C peripheral
+    CLEAR_MASK(i2c->regs->CR1, I2C_CR1_PE);
 
+    // enable clock for i2c peripheral
+    switch (int)i2c->regs) {
+        case (int)I2C1:
+            Core_Reg_Write(RCC->AHB1ENR, SET_MASK(RCC->AHB1ENR, RCC_APB1ENR_I2C1EN));
+        break;
+
+        case (int)I2C2:
+            Core_Reg_Write(RCC->AHB1ENR, SET_MASK(RCC->AHB1ENR, RCC_APB1ENR_I2C2EN));
+        break;
+        
+        default:
+            return ERROR_NO_DEV;
+    }
+
+    // set speed
+    i2c->regs->TIMINGR = config->speed;
+
+    // set addresses
+    uint16_t address_mask;
+    if (I2C_ADDRESS_MODE_7BIT == address_mode) {
+        address_mask = 0x7F;
+    }
+    else {
+        address_mask = 0x3FF;
+    }
+
+    i2c->regs->OAR1 = (I2C_OAR1_OA1EN | (config->address & address_mask));
+
+#ifdef I2C_DUAL_ADDRESS
+    i2c->regs->OAR2 = (I2C_OAR2_OA2EN | (config->address2 & address_mask) | (I2C_OA2_NOMASK << 8));
+#endif
+
+    // configure CR1 and CR2
+    // No Generalcall and NoStretch mode
+    i2c->regs->CR1 = I2C_GENERALCALL_DISABLE | I2C_CR1_NOSTRETCH;
+
+    // Enable the AUTOEND by default
+    i2c->regs->CR2 |= I2C_CR2_AUTOEND;
+
+    // Only enable Address Acknowledge in master mode
+    if (I2C_MODE_MASTER == config->mode) {
+        i2c->regs->CR2 |= I2C_CR2_NACK;
+    }
+    else {
+        i2c->regs->CR2 &= ~I2C_CR2_NACK;
+    }
+	
+    // clean callbacks
     for (int i =0; i<I2C_CB_ID_MAX - 1; ++i) {
         i2c->Callbacks[i] = &Dummy_Callback;
     }
     i2c->Address_Match_Cb = &Dummy_Addr_Callback;
 
     // enable i2c peripheral
+    SET_MASK(i2c->regs->CR1, I2C_CR1_PE);
 }
 
 ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c) {
     // enable interrupts
+    i2c->regs->CR1 |= I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_ADDRIE;
+
+    return NO_ERROR;
 }
 
 ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c) {
     // disable interrupts
+    i2c->regs->CR1 &= ~(I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_ADDRIE);
+
+    return NO_ERROR;
 }
 
 uint8_t I2c_Receive_Count_Get(I2C_h i2c) {

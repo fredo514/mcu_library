@@ -49,7 +49,7 @@ ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config) {
     }
 
     // enable clock for the gpio port
-    Gpio_Reg_Write(RCC->AHBENR, SET_MASK(RCC->AHBENR, 1 << port_index));
+    Core_Reg_Write(RCC->AHBENR, SET_MASK(RCC->AHBENR, 1 << port_index));
 
     // configure gpio registers
     if (((config->mode & GPIO_MODE_MASK) == GPIO_MODE_OUTPUT) || ((config->mode & GPIO_MODE_MASK) == GPIO_MODE_ALT)) {
