@@ -145,11 +145,50 @@ static void Irq_Ev_Handler(I2C_h i2c) {
         // check if stop
 	    if (i2c->regs->ISR & I2C_ISR_STOPF) {
             // clear everything
+            // Clear STOP Flag
+		    i2c->regs->ICR |= I2C_ISR_STOPF;
+
+            // Clear ack flag
+            i2c->regs->ICR |= I2C_ISR_ADDR;
+
+            // Disable rx & tx Interrupts
+             i2c->regs->CR1 &= ~(I2C_CR1_TXIE | I2C_CR1_RXIE);
+
+            if(i2c->status == I2C_STATUS_BUSY_TX) {
+                i2c->Callbacks[I2C_MASTER_TX_DONE_CALLBACK](i2c);
+            }
+            else if(me->status == I2C_STATUS_BUSY_RX) {
+                i2c->Callbacks[I2C_MASTER_RX_DONE_CALLBACK](i2c);
+            }
+            else {
+                // Do nothing
+            }
+
+            // Enable Address Acknowledge
+            i2c->regs->CR2 |= I2C_CR2_NACK;
+
+            // Reset state
+            me->status = I2C_STATUS_READY;
         }
+
         // else check if address match hit
         else if (i2c->regs->ISR & I2C_ISR_ADDR) {
-            // check direction
-            I2C_XFER_DIR_t dir = i2c->regs->ISR & I2C_ISR_DIR ? I2C_XFER_DIR_WRITE : I2C_XFER_DIR_READ;
+            // Clear ADDR Interrupt
+ 		    i2c->regs->ICR |= I2C_ICR_ADDRCF;
+            
+            i2c->receive_count = 0;
+            
+            // get direction
+            I2C_XFER_DIR_t dir;
+            if (i2c->regs->ISR & I2C_ISR_DIR) {
+                dir = I2C_XFER_DIR_WRITE;
+            } 
+            else {
+                dir = I2C_XFER_DIR_READ;
+            } 
+
+            // get address
+            uint16_t addr = (uint16_t)((i2c->regs->ISR & I2C_ISR_ADDR) >> I2C_ISR_ADDR_Pos);
 
             // call address match hit callback
             i2c->Address_Match_Cb(dir, addr);
@@ -158,15 +197,23 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             if (dir == I2C_XFER_DIR_WRITE) {
                 // write
                 // setup slave sequential receive
+                i2c->status = I2C_STATUS_BUSY_RX;
+			    i2c->regs->CR1 |= I2C_ISR_RXNE | I2C_CR1_NACKIE | I2C_CR1_ERRIE | I2C_CR1_TCIE;
             }
             else {
                 // read
                 // setup first byte for slave transmit
-			    i2c->regs->TXDR = i2c->buffer_ptr[0];
+			    i2c->regs->TXDR = (uint32_t)(i2c->buffer_ptr[0]);
+                i2c->status = I2C_STATUS_BUSY_TX;
+                i2c->regs->CR1 |= I2C_CR1_TXIE | I2C_CR1_TCIE;	
             }
         }
+
         // else check if transmitting
         else if (i2c->regs->ISR & I2C_ISR_TXIS) {
+            // clear transmit interrupt
+            i2c->regs->ICR |= I2C_ISR_TXIS;
+            
             if (index < i2c->buf_len) {
                 // place next data from buffer in DR
 		        i2c->regs->TXDR = i2c->buffer_ptr[index];
@@ -177,14 +224,18 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 i2c->regs->TXDR = 0xFF;
             }
         }
+
         // else then receiving
         else {
+            // clear receive interrupt
+            i2c->regs->ICR |= I2C_ISR_RXNE;
+
             // store DR in buffer
-             if (index < i2c->buf_len) {
+            if (index < i2c->buf_len) {
                 i2c->buffer_ptr[index] = i2c->regs->RXDR;
                 i2c->index++;
-             }
-             // drop data if buffer full
+            }
+            // drop data if buffer full
         }
     }
 }
