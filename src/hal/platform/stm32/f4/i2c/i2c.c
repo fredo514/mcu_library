@@ -8,14 +8,8 @@ typedef struct I2C_CTX {
     I2C_STATUS_t status;
     uint8_t receive_count;
 
-    void (*Master_Tx_Done_Cb)(I2C_h i2c);
-    void (*Master_Rx_Done_Cb)(I2C_h i2c);
-    void (*Slave_Tx_Done_Cb)(I2C_h i2c);
-    void (*Slave_Rx_Done_Cb)(I2C_h i2c);
-    void (*Listen_Done_Cb)(I2C_h i2c);      // what's this for? 
+    void (*Callbacks[I2C_CB_ID_MAX - 1])(I2C_h i2c);
     void (*Address_Match_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation, uint16_t address);
-    void (*Error_Cb)(I2C_h i2c);
-    void (*Abort_Done_Cb)(I2C_h i2c);
 };
 
 static void Irq_Ev_Handler(I2C_h i2c);
@@ -35,6 +29,11 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
     // set speed
     // set addresses
     // configure CR1 and CR2
+
+    for (int i =0; i<I2C_CB_ID_MAX - 1; ++i) {
+        i2c->Callbacks[i] = &Dummy_Callback;
+    }
+    i2c->Address_Match_Cb = &Dummy_Addr_Callback;
 
     // enable i2c peripheral
 }
@@ -59,14 +58,25 @@ I2C_STATUS_t I2c_Buffer_Attach(I2C_h i2c, uint8_t const * const buffer_ptr, uint
 }
 
 ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void (*cb)(I2C_h i2c)) {
-    switch (callback_id) {
-        case I2C_ADDRESS_MATCH_CALLBACK:
+    if (callback_id < I2C_ADDRESS_MATCH_CALLBACK) {
+        i2c->Callbacks[callback_id] = cb;
+        if (NULL == cb) {
+            i2c->Callbacks[callback_id] = Dummy_Callback;
+        }
+        else {
+            i2c->Callbacks[callback_id] = cb;
+        }
+    }
+    else if (I2C_ADDRESS_MATCH_CALLBACK == callback_id) {
+        if (NULL == cb) {
+            i2c->Address_Match_Cb = &Dummy_Addr_Callback;
+        }
+        else {
             i2c->Address_Match_Cb = cb;
-        break;
-        
-        default:
-            return ERROR_INVALID_PARAM;
-        break;
+        }
+    }
+    else {
+        return ERROR_INVALID_PARAM;
     }
 
     return SUCCESS;
@@ -129,6 +139,14 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 
 static void Irq_Er_Handler(I2C_h i2c) {
 
+}
+
+static void Dummy_Callback(I2C_h i2c) {
+    // do nothing?
+}
+
+static void Dummy_Addr_Callback(I2C_h i2c, I2C_XFER_DIR_t operation, uint16_t address) {
+    // do nothing or at least attach a buffer?
 }
 
 ERROR_CODE_t inline I2c_Reg_Write (REG_SIZE_t const address, uint32_t const val) {

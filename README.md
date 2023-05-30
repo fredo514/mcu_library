@@ -1,4 +1,14 @@
 # Open Mcu Library
+This library was created with the intent to provide a platform-independent and lean API, much like the Arduino framework but in plain C. Such libraries already exist for individual platforms, such as Arm Cortex (e.g. libopencm3) or Microchip PIC (Harmony), but I couldn't find a good one that covers multiple platforms.
+
+The Open MCU Library supports:
+* Microchip AVR
+* Microchip PIC18
+* Microchip SAM
+* Silicon Labs EFM8
+* NXP LPC
+* Nordic NRF
+* STMicroelectronics STM32
 
 ## Instructions
 ### HAL
