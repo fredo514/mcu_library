@@ -28,6 +28,8 @@ void Core_Restore_Interrupt(CORE_IRQ_t const IRQn, bool const wasEnabled);
 
 uint32_t Core_SysTicks_Get(void);
 
+void Core_Breakpoint(void);
+
 void Core_Nop(void);
 
 #endif // CORE_H

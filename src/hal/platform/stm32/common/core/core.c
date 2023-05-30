@@ -38,3 +38,11 @@ uint32_t SysTicks_Get(void) {
 
     return ticks; 
 } 
+
+void Core_Breakpoint(void) {
+#ifdef __GNUC__
+    __asm__("BKPT");
+#elif __clang__
+    __asm("BKPT");
+#endif
+}

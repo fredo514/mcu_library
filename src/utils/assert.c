@@ -29,7 +29,7 @@ void assertion_failure(char const * const file, uint16_t const linenum) {
 
     printf("Assert fail at file %s, line %u ", __file, linenum); // move to assert_ind?
 
-    __builtin_software_breakpoint();
+    Core_Breakpoint();
 #else
     // call function that indicates an assertion failure  
     assert_ind();
