@@ -1,4 +1,9 @@
 # Open Mcu Library
+
+**THIS PROJECT IS STILL A WORK IN PROGRESS**
+Please feel free to submit pull requests to improve it!
+
+## General
 This library was created with the intent to provide a platform-independent and lean API, much like the Arduino framework but in plain C. Such libraries already exist for individual platforms, such as Arm Cortex (e.g. libopencm3) or Microchip PIC (Harmony), but I couldn't find a good one that covers multiple platforms.
 
 The Open MCU Library supports:
@@ -10,7 +15,13 @@ The Open MCU Library supports:
 * Nordic NRF
 * STMicroelectronics STM32
 
-## Instructions
+It is split in groups:
+* **HAL**: Hardware abstraction layer for the different peripherals for each platform
+* **Utils**: Platform-independant utility modules
+
+Although not directly the goal of this project, drivers for external devices or stacks and general libraries using the Open MCU Library HAL are also included.
+
+## Use Instructions
 ### HAL
 In a module that needs to use a HAL library, simply `#include` the desired HAL header file (e.g. gpio.h). 
 
