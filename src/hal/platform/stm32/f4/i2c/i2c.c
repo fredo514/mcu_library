@@ -149,7 +149,10 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 		    i2c->regs->ICR |= I2C_ISR_STOPF;
 
             // Clear ack flag
-            i2c->regs->ICR |= I2C_ISR_ADDR;
+            i2c->regs->ICR |= I2C_ICR_NACKCF;
+
+            // Enable Address Acknowledge
+            i2c->regs->CR2 |= I2C_CR2_NACK;
 
             // Disable rx & tx Interrupts
              i2c->regs->CR1 &= ~(I2C_CR1_TXIE | I2C_CR1_RXIE);
@@ -160,15 +163,12 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             else if(me->status == I2C_STATUS_BUSY_RX) {
                 i2c->Callbacks[I2C_MASTER_RX_DONE_CALLBACK](i2c);
             }
-            else {
-                // Do nothing
+            else if () {
+                // other ones
             }
 
-            // Enable Address Acknowledge
-            i2c->regs->CR2 |= I2C_CR2_NACK;
-
             // Reset state
-            me->status = I2C_STATUS_READY;
+            i2c->status = I2C_STATUS_READY;
         }
 
         // else check if address match hit
@@ -220,6 +220,8 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 // send 0xFF if buffer empty
                 i2c->regs->TXDR = 0xFF;
             }
+
+            i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
 
         // else then receiving
@@ -230,6 +232,8 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 i2c->index++;
             }
             // drop data if buffer full
+
+            i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
     }
 }
