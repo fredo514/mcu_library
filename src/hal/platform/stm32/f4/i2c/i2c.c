@@ -27,6 +27,10 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
     // Disable the selected I2C peripheral
     CLEAR_MASK(i2c->regs->CR1, I2C_CR1_PE);
 
+    // reset the peripheral
+    SET_MASK(i2c->regs->CR1, I2C_CR1_SWRST);
+    CLEAR_MASK(i2c->regs->CR1, I2C_CR1_SWRST);
+
     // enable clock for i2c peripheral
     switch (int)i2c->regs) {
         case (int)I2C1:
@@ -86,14 +90,14 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
 
 ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c) {
     // enable interrupts
-    i2c->regs->CR1 |= I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_ADDRIE;
+    i2c->regs->CR1 |= I2C_CR1_ERRIE | I2C_CR1_NACKIE | I2C_CR1_ADDRIE | I2C_CR1_STOPIE;
 
     return NO_ERROR;
 }
 
 ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c) {
-    // disable interrupts
-    i2c->regs->CR1 &= ~(I2C_CR1_ERRIE | I2C_CR1_TCIE | I2C_CR1_ADDRIE);
+    // disable all interrupts
+    i2c->regs->CR1 &= ~(???);
 
     return NO_ERROR;
 }
@@ -143,19 +147,13 @@ static void Irq_Ev_Handler(I2C_h i2c) {
         // check if error
 
         // check if stop
-	    if (i2c->regs->ISR & I2C_ISR_STOPF) {
+	    if ((i2c->regs->ISR & I2C_ISR_STOPF) && (i2c->regs->CR1 & I2C_CR1_STOPIE))  {
             // clear everything
             // Clear STOP Flag
 		    i2c->regs->ICR |= I2C_ISR_STOPF;
 
-            // Clear ack flag
-            i2c->regs->ICR |= I2C_ICR_NACKCF;
-
-            // Enable Address Acknowledge
-            i2c->regs->CR2 |= I2C_CR2_NACK;
-
-            // Disable rx & tx Interrupts
-             i2c->regs->CR1 &= ~(I2C_CR1_TXIE | I2C_CR1_RXIE);
+            // Disable interrupts
+            i2c->regs->CR1 &= ~(I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_STOPIE | I2C_CR1_ERRIE | I2C_CR1_TXIE | I2C_CR1_ADDRIE);
 
             if(i2c->status == I2C_STATUS_BUSY_TX) {
                 i2c->Callbacks[I2C_MASTER_TX_DONE_CALLBACK](i2c);
@@ -167,12 +165,15 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 // other ones
             }
 
+            i2c->regs->TXDR = 0x00;
+            CLEAR_MASK(i2c->regs->ISR, I2C_ISR_TXE);
+
             // Reset state
             i2c->status = I2C_STATUS_READY;
         }
 
         // else check if address match hit
-        else if (i2c->regs->ISR & I2C_ISR_ADDR) {
+        else if ((i2c->regs->ISR & I2C_ISR_ADDR) && (i2c->regs->CR1 & I2C_CR1_ADDIE)) {
             // Clear ADDR Interrupt
  		    i2c->regs->ICR |= I2C_ICR_ADDRCF;
             
@@ -198,19 +199,23 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 // write
                 // setup slave sequential receive
                 i2c->status = I2C_STATUS_BUSY_RX;
-			    i2c->regs->CR1 |= I2C_ISR_RXNE | I2C_CR1_NACKIE | I2C_CR1_ERRIE | I2C_CR1_TCIE;
+			    i2c->regs->CR1 |= I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_STOPIE | I2C_CR1_ERRIE;
             }
             else {
                 // read
                 // setup first byte for slave transmit
 			    i2c->regs->TXDR = (uint32_t)(i2c->buffer_ptr[0]);
                 i2c->status = I2C_STATUS_BUSY_TX;
-                i2c->regs->CR1 |= I2C_CR1_TXIE | I2C_CR1_TCIE;	
+                i2c->regs->CR1 |= I2C_CR1_TXIE | I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_STOPIE | I2C_CR1_ERRIE;
             }
         }
 
+        else if ((i2c->regs->ISR & I2C_ISR_NACK) && (i2c->regs->CR1 & I2C_CR1_NACKIE)) {
+
+        }
+
         // else check if transmitting
-        else if (i2c->regs->ISR & I2C_ISR_TXIS) {
+        else if ((i2c->regs->ISR & I2C_ISR_TXIS) && (i2c->regs->CR1 & I2C_CR1_TXI)) {
             if (index < i2c->buf_len) {
                 // place next data from buffer in DR
 		        i2c->regs->TXDR = i2c->buffer_ptr[index];
@@ -224,8 +229,8 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
 
-        // else then receiving
-        else {
+        // else check if receiving
+        else if ((i2c->regs->ISR & I2C_ISR_RXNE) && (i2c->regs->CR1 & I2C_CR1_RXI)) {
             // store DR in buffer
             if (index < i2c->buf_len) {
                 i2c->buffer_ptr[index] = i2c->regs->RXDR;
@@ -235,11 +240,45 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 
             i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
+
+        else {
+            // nothing to do
+        }
     }
 }
 
 static void Irq_Er_Handler(I2C_h i2c) {
+    bool error = false;
+    
+    if (i2c->regs->CR1 & I2C_CR1_ERRIE) {
+        if (i2c->regs->ISR & I2C_ISR_BERR) {
+            // report BERR error
+            error = true;
 
+            // clear error
+            i2c->regs->ICR |= I2C_ICR_BERR;
+        }
+
+        if (i2c->regs->ISR & I2C_ISR_OVR) {
+            // report Over-Run/Under-Run error
+            error = true;
+
+            // clear error
+            i2c->regs->ICR |= I2C_ICR_OVR;
+        }
+
+        if (i2c->regs->ISR & I2C_ISR_ARLO) {
+            // report Arbitration Loss error
+            error = true;
+
+            // clear error
+            i2c->regs->ICR |= I2C_ICR_ARLO;
+        }
+    }
+    
+    if (error) {
+        // handle error
+    }
 }
 
 static void Dummy_Callback(I2C_h i2c) {
