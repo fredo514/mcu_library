@@ -35,9 +35,9 @@ typedef struct {
     PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input);
 } PID_CONFIG_t;
 
-typedef PID_CTX_t const * const PID_h;
+typedef struct PID_CTX const * const PID_h;
 
-PID_h Pid_Create(void)
+PID_h Pid_Create(void);
 ERROR_CODE_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config);
 ERROR_CODE_t Pid_Error_Calc_Callback_Register(PID_h pid, PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input));
 

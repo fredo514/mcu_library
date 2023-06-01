@@ -1,6 +1,6 @@
 #include "pid.h"
 
-typedef struct {
+struct PID_CTX {
     PID_DATA_t last_output;
     PID_DATA_t setpoint;
     
@@ -13,6 +13,7 @@ typedef struct {
 
     // for integral
     PID_DATA_t i_term;
+    PID_DATA_t last_error;
 
     // for derivative
     PID_DATA_t last_input;
@@ -22,10 +23,14 @@ typedef struct {
     PID_DATA_t min_output;
 
     PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input);
-} PID_CTX_t;
+};
 
 static PID_DATA_t Simple_Error(PID_DATA_t setpoint, PID_DATA_t input);
 static PID_DATA_t Clamp(PID_h pid, PID_DATA_t val);
+
+PID_h Pid_Create(void) {
+    return calloc(1, sizeof(struct PID_CTX));
+}
 
 ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     ASSERT(pid);
@@ -116,21 +121,26 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
 
         // Calculate derivative term using derivative on measurement to avoid derivative kick
         // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
-        pid->last_deriv = pid->last_deriv + (α * ((pid->d_gain * input_deriv) - pid->last_deriv));
+        pid->last_deriv = pid->last_deriv + (α * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
+        // could also use a small FIR filter such as: (TODO, replace with Fir_Filt instance)
+        // pid->last_deriv[0] = pid->d_gain * (input_deriv - last_deriv[2] + 3*(last_deriv[0] - last_deriv[1])) / 6;
         // d_term is negative due to using derivative on measurement
         output -= pid->last_deriv;
 
         // Clamp to avoid windup and store
         output = Clamp(pid, output);
         // CO filter
-        output = pid->last_output + ((sampling_period / (pid->alpha * pid->Kd / pid->Kp)) * (output - pid->last_output));
+        output = pid->last_output + ((sampling_period / (pid->alpha * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
         pid->last_output = output;
 
         // Update intergral sum at the end for faster response time
-        // Clamp to avoid windup
         // Store computed term to avoid bump when changing the integral gain
-        pid->i_term += pid->i_gain * error;
+        // Use bilinear transform for integral to smooth sharp changes (could also be standard, forward difference, backward difference, etc)
+        pid->i_term += pid->i_gain * (error - pid->last_error) / 2;
+        pid->last_error = error;
+        //pid->i_term += pid->i_gain * error;
         pid->i_term -= p_on_m_term;
+        // Clamp to avoid windup
         pid->i_term = Clamp(pid, pid->i_term);
     }    
 

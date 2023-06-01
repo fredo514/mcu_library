@@ -1,7 +1,7 @@
 #include "i2c.h"
 #include "stdint.h"
 
-typedef struct I2C_CTX {
+struct I2C_CTX {
     I2C_REGS_t const * const regs;
     I2C_MODE_t mode;
     uint8_t * buffer_ptr;
