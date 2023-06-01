@@ -153,7 +153,7 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 		    i2c->regs->ICR |= I2C_ISR_STOPF;
 
             // Disable interrupts
-            i2c->regs->CR1 &= ~(I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_STOPIE | I2C_CR1_ERRIE | I2C_CR1_TXIE | I2C_CR1_ADDRIE);
+            i2c->regs->CR1 &= ~(I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_TXIE);
 
             if(i2c->status == I2C_STATUS_BUSY_TX) {
                 i2c->Callbacks[I2C_MASTER_TX_DONE_CALLBACK](i2c);
