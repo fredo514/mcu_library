@@ -1,6 +1,9 @@
 #ifndef FIR_FILTER_H
 #define FIR_FILTER_H
 
+#include "error.h"
+#include "stdint.h"
+
 typedef float FIR_DATA_t;
 
 typedef struct FIR_CTX const * const FIR_h;
@@ -10,5 +13,6 @@ ERROR_CODE_t Fir_Filt_Init(FIR_h filt, FIR_DATA_t * coeffs);
 
 FIR_DATA_t Fir_Filt_Form1_Update(FIR_h filt, FIR_DATA_t input);
 FIR_DATA_t Fir_Filt_Linear_Update(FIR_h filt, FIR_DATA_t input);
+FIR_DATA_t Fir_Filt_Output_Get(FIR_h filt);
 
 #endif // FIR_FILTER_H
