@@ -15,7 +15,7 @@
 
 // execute start before running what comes in the provided {} after the macro, then calls end
 // usage:
-// defer(start, end) { 
+// DEFER(start, end) { 
 //     foo(); 
 // } 
 #define DEFER(start, end) (start); for (                  \ 

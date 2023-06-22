@@ -2,6 +2,7 @@
 #include "ring_fifo.h"
 
 typedef struct UART_CTX {
+    UART_REGS_t const * const regs;
     RING_FIFO_h fifo;
     UART_STATUS_t status;
 };
