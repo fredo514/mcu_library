@@ -8,6 +8,7 @@ typedef struct {
 } NVM_CONFIG_t;
 
 ERROR_CODE_t Nvm_Init(NVM_CONFIG_t const * const config);
+
 ERROR_CODE_t Nvm_Write(uint32_t address, REG_SIZE_t * data_buf, uint8_t len);
 ERROR_CODE_t Nvm_Read(uint32_t address, REG_SIZE_t * data_buf, uint8_t len);
 ERROR_CODE_t Nvm_Erase(uint32_t address);
