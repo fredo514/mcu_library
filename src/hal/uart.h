@@ -65,14 +65,17 @@ ERROR_CODE_t Uart_Disable(UART_h uart);
 ERROR_STATUS_t Uart_Status_Get(UART_h uart);
 
 ERROR_CODE_t Uart_Char_Put(UART_h uart, uint8_t const ch);
+ERROR_CODE_t Uart_Buffer_Put(UART_h uart, uint8_t const * const buf, uint8_t len);
 ERROR_CODE_t Uart_Break(UART_h uart);
 uint8_t Uart_Char_Get(UART_h uart);
+ERROR_CODE_t Uart_Buffer_Get(UART_h uart, uint8_t * const buf, uint8_t len);
 ERROR_CODE_t Uart_Flush_All(UART_h uart);
 ERROR_CODE_t Uart_Flush_Rx(UART_h uart);
 ERROR_CODE_t Uart_Flush_Tx(UART_h uart);
 
 bool Uart_Is_Char_Available(UART_h uart);
 bool Uart_Is_Tx_Full(UART_h uart);
+bool Uart_Is_Tx_Done(UART_h uart);
 
 // Use these SPARINGLY to extend the API
 ERROR_CODE_t Uart_Reg_Write (REG_SIZE_t * const address, uint32_t const val);
