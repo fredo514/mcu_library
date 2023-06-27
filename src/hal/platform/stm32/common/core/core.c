@@ -9,7 +9,7 @@ bool Core_Save_And_Disable_Interrupt(CORE_IRQ_t const IRQn) {
     }
     else {
         state = (bool)__NVIC_GetEnableIRQ(IRQn);
-        __NVIC_DisableIRQ(IRQn)
+        __NVIC_DisableIRQ(IRQn);
     }
 
     return state;
