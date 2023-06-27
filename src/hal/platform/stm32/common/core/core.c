@@ -21,7 +21,7 @@ void Core_Restore_Interrupt(CORE_IRQ_t const IRQn, bool const wasEnabled) {
             __enable_irq();
         }
         else {
-            __NVIC_EnableIRQ(IRQn)
+            __NVIC_EnableIRQ(IRQn);
         } 
     }
 }
