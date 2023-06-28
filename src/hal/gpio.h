@@ -7,35 +7,36 @@
 #include "gpio_def.h"	// contains platform-specific defines
 
 typedef enum {
-	LOW = 0,
-	HIGH = 1,
+	GPIO_LOW = 0,
+	GPIO_HIGH = 1,
 	GPIO_STATE_MAX
 } GPIO_STATE_t;
 
 typedef enum {
-	PIN_0 = 0,
-	PIN_1 = 1,
-	PIN_2 = 2,
-	PIN_3 = 3,
-	PIN_4 = 4,
-	PIN_5 = 5,
-	PIN_6 = 6,
-	PIN_7 = 7,
-	PIN_8 = 8,
-	PIN_9 = 9,
-	PIN_10 = 10,
-	PIN_11 = 11,
-	PIN_12 = 12,
-	PIN_13 = 13,
-	PIN_14 = 14,
-	PIN_15 = 15,
+	GPIO_PIN_0 = 0,
+	GPIO_PIN_1 = 1,
+	GPIO_PIN_2 = 2,
+	GPIO_PIN_3 = 3,
+	GPIO_PIN_4 = 4,
+	GPIO_PIN_5 = 5,
+	GPIO_PIN_6 = 6,
+	GPIO_PIN_7 = 7,
+	GPIO_PIN_8 = 8,
+	GPIO_PIN_9 = 9,
+	GPIO_PIN_10 = 10,
+	GPIO_PIN_11 = 11,
+	GPIO_PIN_12 = 12,
+	GPIO_PIN_13 = 13,
+	GPIO_PIN_14 = 14,
+	GPIO_PIN_15 = 15,
 	GPIO_PIN_MAX
 } GPIO_PIN_t;
 
 typedef GPIO_CTX_t const * const GPIO_h;
 
 typedef struct {
-    GPIO_MODE_t mode;
+    GPIO_h gpio;
+	GPIO_MODE_t mode;
 	GPIO_STATE_t init_state;
 	GPIO_ALT_FUNCTION_t alt_function;
     GPIO_PULL_t pull;
@@ -43,15 +44,15 @@ typedef struct {
 } GPIO_CONFIG_t;
 
 GPIO_h Gpio_Create(GPIO_PORT_t const * const port, GPIO_PIN_t const pin);
-ERROR_CODE_t Gpio_Init(GPIO_h gpio, GPIO_CONFIG_t const * const config);
+ERROR_CODE_t Gpio_Init(GPIO_CONFIG_t const * const config);
 ERROR_CODE_t Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK_t const function, void (*cb)(void));  // really need this?
 ERROR_CODE_t Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE_t const mode);
 
-GPIO_STATE_t Gpio_Pin_Read(GPIO_h gpio);
-ERROR_CODE_t Gpio_Pin_Set(GPIO_h gpio, GPIO_STATE_t const state);
-// ERROR_CODE Gpio_Pin_Set_Low(GPIO_h gpio);
-// ERROR_CODE Gpio_Pin_Set_High(GPIO_h gpio);
-ERROR_CODE_t Gpio_Pin_Toggle(GPIO_h gpio);
+GPIO_STATE_t Gpio_Read(GPIO_h gpio);
+ERROR_CODE_t Gpio_Set(GPIO_h gpio, GPIO_STATE_t const state);
+// ERROR_CODE Gpio_Set_Low(GPIO_h gpio);
+// ERROR_CODE Gpio_Set_High(GPIO_h gpio);
+ERROR_CODE_t Gpio_Toggle(GPIO_h gpio);
 
 // bool Gpio_Is_Set_High(GPIO_h gpio);  // for output
 // bool Gpio_Is_Set_Low(GPIO_h gpio);  // for output
