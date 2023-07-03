@@ -1,5 +1,15 @@
 // TODO: Master blocking, master non-blocking and slave?
 
+/* USAGE
+// MASTER
+//
+//
+// SLAVE
+// Implement and register an address match callback that attach a buffer with the
+// expectect transaction length when called
+
+*/
+
 #ifndef I2C_H
 #define I2C_H
 

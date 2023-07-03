@@ -210,11 +210,12 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             }
         }
 
+        // else check if NACK
         else if ((i2c->regs->ISR & I2C_ISR_NACK) && (i2c->regs->CR1 & I2C_CR1_NACKIE)) {
 
         }
 
-        // else check if transmitting
+        // else check if master reads from us
         else if ((i2c->regs->ISR & I2C_ISR_TXIS) && (i2c->regs->CR1 & I2C_CR1_TXI)) {
             if (index < i2c->buf_len) {
                 // place next data from buffer in DR
@@ -229,14 +230,20 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
 
-        // else check if receiving
+        // else check if master is sending data
         else if ((i2c->regs->ISR & I2C_ISR_RXNE) && (i2c->regs->CR1 & I2C_CR1_RXI)) {
-            // store DR in buffer
             if (index < i2c->buf_len) {
+                // store DR in buffer 
                 i2c->buffer_ptr[index] = i2c->regs->RXDR;
                 i2c->index++;
+
+                send ACK
             }
-            // drop data if buffer full
+            else {
+                // drop data if buffer full
+                send NACK
+            }
+            
 
             i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
