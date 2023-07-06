@@ -50,7 +50,7 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
 
     // set addresses
     uint16_t address_mask;
-    if (I2C_ADDRESS_MODE_7BIT == address_mode) {
+    if (I2C_ADDRESS_MODE_7BIT == config->address_mode) {
         address_mask = 0x7F;
     }
     else {
@@ -70,13 +70,8 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
     // Enable the AUTOEND by default
     i2c->regs->CR2 |= I2C_CR2_AUTOEND;
 
-    // Only enable Address Acknowledge in master mode
-    if (I2C_MODE_MASTER == config->mode) {
-        i2c->regs->CR2 |= I2C_CR2_NACK;
-    }
-    else {
-        i2c->regs->CR2 &= ~I2C_CR2_NACK;
-    }
+    // always respond NACK for by default
+    i2c->regs->CR2 |= I2C_CR2_NACK;
 	
     // clean callbacks
     for (int i =0; i<I2C_CB_ID_MAX - 1; ++i) {
@@ -89,15 +84,23 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
 }
 
 ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c) {
-    // enable interrupts
-    i2c->regs->CR1 |= I2C_CR1_ERRIE | I2C_CR1_NACKIE | I2C_CR1_ADDRIE | I2C_CR1_STOPIE;
+    // disable all interrupts
+    i2c->regs->CR1 &= ~(I2C_XFER_LISTEN_IT | I2C_XFER_TX_IT | I2C_XFER_RX_IT);
+
+    clear the address match flag
+
+    // Set to respond ACK on next address match
+    hi2c->Instance->CR2 &= ~I2C_CR2_NACK;
+
+    // enable all interrupts
+    i2c->regs->CR1 |= I2C_XFER_LISTEN_IT | I2C_XFER_TX_IT | I2C_XFER_RX_IT;
 
     return NO_ERROR;
 }
 
 ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c) {
     // disable all interrupts
-    i2c->regs->CR1 &= ~(???);
+    i2c->regs->CR1 &= ~(I2C_XFER_LISTEN_IT | I2C_XFER_TX_IT | I2C_XFER_RX_IT);
 
     return NO_ERROR;
 }
@@ -167,6 +170,9 @@ static void Irq_Ev_Handler(I2C_h i2c) {
 
             i2c->regs->TXDR = 0x00;
             CLEAR_MASK(i2c->regs->ISR, I2C_ISR_TXE);
+
+            // Set to respond ACK on next address match
+            hi2c->Instance->CR2 &= ~I2C_CR2_NACK;
 
             // Reset state
             i2c->status = I2C_STATUS_READY;
@@ -241,7 +247,9 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             }
             else {
                 // drop data if buffer full
-                send NACK
+
+                // send NACK
+                i2c->regs->CR2 |= I2C_CR2_NACK;
             }
             
 

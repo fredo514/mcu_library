@@ -1,3 +1,6 @@
+// TODO: make it atomic (thread-safe)
+// TODO: make it type-generic template
+
 #ifndef RINGFIFO_H
 #define	RINGFIFO_H
 
