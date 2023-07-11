@@ -31,12 +31,15 @@ typedef enum {
 typedef enum {
     I2C_MASTER_TX_DONE_CALLBACK,
     I2C_MASTER_RX_DONE_CALLBACK,
+    I2C_ABORT_DONE_CALLBACK,
+
+    I2C_LISTEN_DONE_CALLBACK,      // what's this for? 
+    I2C_ADDRESS_MATCH_CALLBACK,
     I2C_SLAVE_TX_DONE_CALLBACK,
     I2C_SLAVE_RX_DONE_CALLBACK,
-    I2C_LISTEN_DONE_CALLBACK,      // what's this for? 
+    I2C_SLAVE_RX_ACK_CALLBACK,
+
     I2C_ERROR_CALLBACK,
-    I2C_ABORT_DONE_CALLBACK,
-    I2C_ADDRESS_MATCH_CALLBACK, // at the end because it has a different prototype
     I2C_CB_ID_MAX
 } I2C_CALLBACK_ID_t;
 
@@ -66,7 +69,7 @@ typedef enum {
     I2C_STATUS_TIMEOUT,
     I2C_STATUS_ERROR,
     I2C_STATUS_MAX
-} I2C_STATUS_t;
+} I2C_STATE_t;
 
 typedef enum {
     I2C_XFER_DIR_READ,
@@ -79,17 +82,17 @@ typedef struct I2C_CTX const * const I2C_h;
 typedef struct {
     I2C_MODE_t mode;
     I2C_SPEED_t speed;
-    uint16_t address;
-#ifdef I2C_DUAL_ADDRESS
-    uint16_t address2;
-#endif
     I2C_ADDRESS_MODE_t address_mode;
+    uint16_t slave_address;
+#ifdef I2C_DUAL_ADDRESS
+    uint16_t slave_address2;
+#endif
 } I2C_CONFIG_t;
 
 I2C_h I2c_Create(I2C_TypeDef const * const instance);
 ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config);
-ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void (*cb)(I2C_h i2c));
-I2C_STATUS_t I2c_Status_Get(I2C_h i2c);
+ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void * cb);
+I2C_STATE_t I2c_State_Get(I2C_h i2c);
 uint8_t I2c_Receive_Count_Get(I2C_h i2c);
 I2C_STATUS_t I2c_Buffer_Attach(I2C_h i2c, uint8_t const * const buffer_ptr, uint16_t len);
 

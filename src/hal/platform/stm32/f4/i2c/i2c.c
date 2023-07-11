@@ -5,11 +5,12 @@ struct I2C_CTX {
     I2C_REGS_t const * const regs;
     I2C_MODE_t mode;
     uint8_t * buffer_ptr;
-    I2C_STATUS_t status;
-    uint8_t receive_count;
+    I2C_STATE_t state;
+    uint8_t index;
 
-    void (*Callbacks[I2C_CB_ID_MAX - 1])(I2C_h i2c);
     void (*Address_Match_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation, uint16_t address);
+    bool (*Slave_Rx_Ack_Cb)(I2C_h i2c, uint8_t byte);
+    void (*Slave_Done_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation);
 };
 
 static void Irq_Ev_Handler(I2C_h i2c);
@@ -45,62 +46,85 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
             return ERROR_NO_DEV;
     }
 
-    // set speed
-    i2c->regs->TIMINGR = config->speed;
+    switch (config->mode) {
+        case I2C_MODE_MASTER:
+            return ERROR_INTERNAL;
+        break;
 
-    // set addresses
-    uint16_t address_mask;
-    if (I2C_ADDRESS_MODE_7BIT == config->address_mode) {
-        address_mask = 0x7F;
-    }
-    else {
-        address_mask = 0x3FF;
-    }
+        case I2C_MODE_SLAVE:
+            // Setup slave address 
+            uint16_t address_mask;
+            if (I2C_ADDRESS_MODE_7BIT == config->address_mode) {
+                address_mask = 0x7F;
+            }
+            else {
+                address_mask = 0x3FF;
+            }
 
-    i2c->regs->OAR1 = (I2C_OAR1_OA1EN | (config->address & address_mask));
+            i2c->regs->OAR1 = (I2C_OAR1_OA1EN | ((config->address & address_mask) << 1));
 
 #ifdef I2C_DUAL_ADDRESS
-    i2c->regs->OAR2 = (I2C_OAR2_OA2EN | (config->address2 & address_mask) | (I2C_OA2_NOMASK << 8));
+            // Setup slave address 2 if enabled 
+            if (config->slave_address2 != 0)
+            {
+                i2c->regs->OAR2 = (I2C_OAR2_OA2EN | ((config->slave_address2 & address_mask) << 1) | (I2C_OA2_NOMASK << 8));
+            }
 #endif
 
-    // configure CR1 and CR2
-    // No Generalcall and NoStretch mode
-    i2c->regs->CR1 = I2C_GENERALCALL_DISABLE | I2C_CR1_NOSTRETCH;
+            // General call disabled
+            // Stretch mode enabled
+            // Reload mode enabled
+            // Slave byte control mode disabled for now
+            // No noise filter
+            // all interrupts disabled
+            i2c->regs->CR1 = 0;
 
-    // Enable the AUTOEND by default
-    i2c->regs->CR2 |= I2C_CR2_AUTOEND;
+            // AUTOEND enabled
+            // Reload mode enabled
+            // Respond NACK by default
+            i2c->regs->CR2 = I2C_CR2_AUTOEND | I2C_CR2_RELOAD | I2C_CR2_NACK;
 
-    // always respond NACK for by default
-    i2c->regs->CR2 |= I2C_CR2_NACK;
+            // Configure baudrate
+            i2c->regs->TIMINGR = config->speed;
+
+            // cleanup dangling address match interrupts
+            i2c->regs->ISR &= ~I2C_ISR_ADDR;
+        break;
+
+        default:
+            return ERROR_INVALID_PARAM;
+    }
 	
     // clean callbacks
-    for (int i =0; i<I2C_CB_ID_MAX - 1; ++i) {
-        i2c->Callbacks[i] = &Dummy_Callback;
-    }
-    i2c->Address_Match_Cb = &Dummy_Addr_Callback;
+    // Attach dummy function to callbacks to avoid error if interrupt is called before app attaches its own
+	i2c->Address_Match_Cb = &Dummy_Addr_Callback;	
+	i2c->Slave_Rx_Ack_Cb = &Dummy_Rx_Ack;
+	// Attach dummy buffer for if app forgets to attach its own
+	i2c_buffer_attach(me, &dummy_buffer, 1);
+	me->index = 0;
+
+    // Need to be enabled separately
+	me->state = I2C_STATE_INACTIVE;
 
     // enable i2c peripheral
     SET_MASK(i2c->regs->CR1, I2C_CR1_PE);
 }
 
 ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c) {
-    // disable all interrupts
-    i2c->regs->CR1 &= ~(I2C_XFER_LISTEN_IT | I2C_XFER_TX_IT | I2C_XFER_RX_IT);
+    // ready to accept transactions
+	me->state = I2C_STATE_READY;
 
-    clear the address match flag
-
-    // Set to respond ACK on next address match
-    hi2c->Instance->CR2 &= ~I2C_CR2_NACK;
-
-    // enable all interrupts
-    i2c->regs->CR1 |= I2C_XFER_LISTEN_IT | I2C_XFER_TX_IT | I2C_XFER_RX_IT;
+    // enable all interrupts for listen mode
+    i2c->regs->CR1 |= I2C_CR1_ERRIE | I2C_CR1_STOPIE | I2C_CR1_ADDRIE | I2C_CR1_NACKIE;
 
     return NO_ERROR;
 }
 
 ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c) {
     // disable all interrupts
-    i2c->regs->CR1 &= ~(I2C_XFER_LISTEN_IT | I2C_XFER_TX_IT | I2C_XFER_RX_IT);
+    i2c->regs->CR1 &= ~(I2C_CR1_ERRIE | I2C_CR1_STOPIE | I2C_CR1_ADDRIE | I2C_CR1_NACKIE | I2C_CR1_TXIE | I2C_CR1_RXIE | I2C_CR1_TCIE);
+
+	me->state = I2C_STATE_INACTIVE;
 
     return NO_ERROR;
 }
@@ -116,26 +140,28 @@ I2C_STATUS_t I2c_Buffer_Attach(I2C_h i2c, uint8_t const * const buffer_ptr, uint
     return NO_ERROR;
 }
 
-ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void (*cb)(I2C_h i2c)) {
-    if (callback_id < I2C_ADDRESS_MATCH_CALLBACK) {
-        i2c->Callbacks[callback_id] = cb;
-        if (NULL == cb) {
-            i2c->Callbacks[callback_id] = Dummy_Callback;
-        }
-        else {
-            i2c->Callbacks[callback_id] = cb;
-        }
-    }
-    else if (I2C_ADDRESS_MATCH_CALLBACK == callback_id) {
-        if (NULL == cb) {
-            i2c->Address_Match_Cb = &Dummy_Addr_Callback;
-        }
-        else {
-            i2c->Address_Match_Cb = cb;
-        }
-    }
-    else {
-        return ERROR_INVALID_PARAM;
+ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void * cb) {
+    switch (callback_id) {
+        case I2C_ADDRESS_MATCH_CALLBACK:
+            if (NULL == cb) {
+                i2c->Address_Match_Cb = &Dummy_Addr_Callback;
+            }
+            else {
+                i2c->Address_Match_Cb = (void (*func)(I2C_XFER_DIR_t dir, uint16_t address))cb;
+            }
+        break;
+
+        case I2C_SLAVE_RX_ACK_CALLBACK:
+            if (NULL == cb) {
+                i2c->Slave_Rx_Ack_Cb = &Dummy_Rx_Ack_Callback;
+            }
+            else {
+                i2c->Slave_Rx_Ack_Cb = (bool (*func)(uint8_t byte))cb;
+            }
+        break; 
+
+        default:
+            return ERROR_INVALID_PARAM;
     }
 
     return SUCCESS;
@@ -150,15 +176,15 @@ static void Irq_Ev_Handler(I2C_h i2c) {
         // check if error
 
         // check if stop
-	    if ((i2c->regs->ISR & I2C_ISR_STOPF) && (i2c->regs->CR1 & I2C_CR1_STOPIE))  {
+	    if (i2c->regs->ISR & I2C_ISR_STOPF) {
             // clear everything
-            // Clear STOP Flag
-		    i2c->regs->ICR |= I2C_ISR_STOPF;
+            // Clear dangling interrupts
+		    i2c->regs->ICR |= I2C_ICR_STOPCF | I2C_ICR_NACKCF;
 
             // Disable interrupts
             i2c->regs->CR1 &= ~(I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_TXIE);
 
-            if(i2c->status == I2C_STATUS_BUSY_TX) {
+            if(i2c->state == I2C_STATUS_BUSY_TX) {
                 i2c->Callbacks[I2C_MASTER_TX_DONE_CALLBACK](i2c);
             }
             else if(me->status == I2C_STATUS_BUSY_RX) {
@@ -171,19 +197,17 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             i2c->regs->TXDR = 0x00;
             CLEAR_MASK(i2c->regs->ISR, I2C_ISR_TXE);
 
-            // Set to respond ACK on next address match
-            hi2c->Instance->CR2 &= ~I2C_CR2_NACK;
-
             // Reset state
             i2c->status = I2C_STATUS_READY;
         }
 
         // else check if address match hit
-        else if ((i2c->regs->ISR & I2C_ISR_ADDR) && (i2c->regs->CR1 & I2C_CR1_ADDIE)) {
+        else if (i2c->regs->ISR & I2C_ISR_ADDR) {
             // Clear ADDR Interrupt
  		    i2c->regs->ICR |= I2C_ICR_ADDRCF;
             
-            i2c->receive_count = 0;
+            // reset buffer index
+            i2c->index = 0;
             
             // get direction
             I2C_XFER_DIR_t dir;
@@ -204,26 +228,51 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             if (dir == I2C_XFER_DIR_WRITE) {
                 // write
                 // setup slave sequential receive
-                i2c->status = I2C_STATUS_BUSY_RX;
-			    i2c->regs->CR1 |= I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_STOPIE | I2C_CR1_ERRIE;
+                i2c->state = I2C_STATUS_BUSY_RX;
+			    i2c->regs->CR1 |= I2C_ISR_RXIE | I2C_CR1_TCIE;
+
+                // flush the receive register
+                volatile uint32_t tmp = i2c->regs->RXDR;
+
+                // setup reload for individual bytes ACK control
+                i2c->regs->CR1 |= I2C_CR1_SBC;
+                i2c->regs->CR2 &= ~I2C_CR2_NBYTES_Msk;
+                i2c->regs->CR2 |= (1 << I2C_CR2_NBYTES_Pos);
+
+                // enable slave receive interrupts	
+                i2c->regs->CR1 |= I2C_CR1_RXIE | I2C_CR1_TCIE;
             }
             else {
                 // read
                 // setup first byte for slave transmit
-			    i2c->regs->TXDR = (uint32_t)(i2c->buffer_ptr[0]);
                 i2c->status = I2C_STATUS_BUSY_TX;
-                i2c->regs->CR1 |= I2C_CR1_TXIE | I2C_CR1_TCIE | I2C_CR1_NACKIE | I2C_CR1_STOPIE | I2C_CR1_ERRIE;
+
+                // clean any dangling interrupts
+                i2c->regs->ISR |= I2C_ISR_TXE | I2C_ISR_TXIS;
+                i2c->regs->ICR |= I2C_ICR_STOPCF;
+            
+                // setup first byte for slave transmit
+                i2c->regs->TXDR = i2c->buffer_ptr[0];
+                i2c->index = 1;
+                    
+                // disable individual bytes ACK control when transmitting
+                i2c->regs->CR1 &= ~I2C_CR1_SBC;
+                
+                // Enable slave transmit interrupts
+                i2c->regs->CR1 |= I2C_CR1_TXIE;	
             }
         }
 
         // else check if NACK
-        else if ((i2c->regs->ISR & I2C_ISR_NACK) && (i2c->regs->CR1 & I2C_CR1_NACKIE)) {
-
+        else if (i2c->regs->ISR & I2C_ISR_NACK) {
+            // Clear NACK
+		    i2c->regs->ICR |= I2C_ICR_NACKCF;
         }
 
         // else check if master reads from us
-        else if ((i2c->regs->ISR & I2C_ISR_TXIS) && (i2c->regs->CR1 & I2C_CR1_TXI)) {
-            if (index < i2c->buf_len) {
+        else if (i2c->regs->ISR & I2C_ISR_TXIS) {
+            // check if buffer is empty
+            if (i2c->index < i2c->buf_len) {
                 // place next data from buffer in DR
 		        i2c->regs->TXDR = i2c->buffer_ptr[index];
                 i2c->index++;
@@ -232,28 +281,41 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 // send 0xFF if buffer empty
                 i2c->regs->TXDR = 0xFF;
             }
-
-            i2c->regs->CR1 |= I2C_CR1_STOPIE;
         }
 
         // else check if master is sending data
-        else if ((i2c->regs->ISR & I2C_ISR_RXNE) && (i2c->regs->CR1 & I2C_CR1_RXI)) {
-            if (index < i2c->buf_len) {
-                // store DR in buffer 
+        else if ((i2c->regs->ISR & I2C_ISR_RXNE) || (i2c->regs->ISR & I2C_ISR_TCR)) {
+            // clear interrupt
+		    i2c->regs->ISR &= ~I2C_ISR_TCR;
+            
+            // check if buffer is full
+            if (i2c->index < i2c->buf_len) {
+                // buffer is not full
+                // store receive data register in buffer
                 i2c->buffer_ptr[index] = i2c->regs->RXDR;
                 i2c->index++;
 
-                send ACK
+                // check with app to decide what ACK to answer
+                if (i2c->Slave_Rx_Ack_Cb((uint8_t)i2c->regs->RXDR)) {
+                    // true, answer ACK
+                    i2c->regs->CR2 &= ~I2C_CR2_NACK;
+                }
+                else {
+                    // false, answer NACK
+                    i2c->regs->CR2 |= I2C_CR2_NACK;
+                }
             }
             else {
-                // drop data if buffer full
-
-                // send NACK
+                // buffer is full
+                // drop this byte to avoid receive register overflow error
+                volatile uint32_t tmp = i2c->regs->RXDR;
+                
+                // answer NACK
                 i2c->regs->CR2 |= I2C_CR2_NACK;
             }
             
-
-            i2c->regs->CR1 |= I2C_CR1_STOPIE;
+            // release clock by setting up reload for next byte ACK control
+		    i2c->regs->CR2 |= (1 << I2C_CR2_NBYTES_Pos);
         }
 
         else {
@@ -302,6 +364,11 @@ static void Dummy_Callback(I2C_h i2c) {
 
 static void Dummy_Addr_Callback(I2C_h i2c, I2C_XFER_DIR_t operation, uint16_t address) {
     // do nothing or at least attach a buffer?
+}
+
+static bool Dummy_Rx_Ack_Callback(I2C_h i2c, uint8_t byte) {
+    // do nothing or at least attach a buffer?
+    return false;
 }
 
 ERROR_CODE_t inline I2c_Reg_Write (REG_SIZE_t const address, uint32_t const val) {
