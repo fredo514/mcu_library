@@ -27,6 +27,6 @@ ERROR_CODE_t Ao_Timeevent_Init(AO_TIMEEVENT_h time_event, AO_SIGNAL_t sig, AO_h 
 ERROR_CODE_t Ao_Timeevent_Arm(AO_TIMEEVENT_h time_event, uint32_t timeout, uint32_t period);
 ERROR_CODE_t Ao_Timeevent_Stop(AO_TIMEEVENT_h time_event);
 
-void TimeEvent_Service(void);
+void Ao_TimeEvent_Service(void);
 
 #endif // ACTIVEOBJECT_H

@@ -82,7 +82,7 @@ ERROR_CODE_t Ao_Timeevent_Stop(AO_TIMEEVENT_h time_event) {
     }
 }
 
-void TimeEvent_Service(void) {
+void Ao_TimeEvent_Service(void) {
     for (uint_fast8_t i = 0; i < time_events_num; ++i) {
         AO_TIMEEVENT_h const evt = time_events[i];
         assert(evt);
