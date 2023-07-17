@@ -32,9 +32,6 @@ static void Systick_Handler(void) {
 Bsp_Init(void) {
     Core_Init();
     Core_Interrupt_Callback_Attach(SYSTICK_IRQ, &Systick_Handler);
-}
-
-Bsp_Start(void) {
     Core_Systick_Start();
 }
 
@@ -98,7 +95,6 @@ AO_h blinky_ao = &blinky.super;
 
 int main(void) {
     Bsp_Init();
-    Bsp_Start();
 
     Button_Init(&button);
     Ao_Run(button_ao);
