@@ -21,31 +21,25 @@ ERROR_CODE_t Gpio_Init(GPIO_CONFIG_t const * const config) {
     ASSERT((config->gpio->pin >= 0) && (config->gpio->pin < GPIO_PIN_MAX));   // only 16 pins per port
 
     // Find the clock enable bit for the gpio port
-    // NOTE: Cannot be tested with mock register structure besause case will not evaluate to constant.
+    // uses if/else to be able to test with mock register structure.
     uint8_t port_index = 0;
-    switch ((int)config->gpio->port) {
-        case (int)GPIO_PORTA:
-            port_index = 0;
-        break;
-
-        case (int)GPIO_PORTB:
-            port_index = 1;
-        break; 
-
-        case (int)GPIO_PORTC:
-            port_index = 2;
-        break; 
-
-        case (int)GPIO_PORTD:
-            port_index = 3;
-        break; 
-
-        case (int)GPIO_PORTF:
-            port_index = 5;
-        break; 
-
-        default:
-            return ERROR_NO_DEV;
+    if (config->gpio->port == GPIO_PORTA) {
+        port_index = 0;
+    }
+    else if (config->gpio->port == GPIO_PORTB) {
+        port_index = 1;
+    }
+    else if (config->gpio->port == GPIO_PORTC) {
+        port_index = 2;
+    }
+    else if (config->gpio->port == GPIO_PORTD) {
+        port_index = 3;
+    }
+    else if (config->gpio->port == GPIO_PORTF) {
+        port_index = 5;
+    }
+    else {
+        return ERROR_NO_DEV;
     }
 
     // enable clock for the gpio port

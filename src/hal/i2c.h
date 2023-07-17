@@ -23,8 +23,14 @@ typedef enum {
 } I2C_MODE_t;
 
 typedef enum {
-    I2C_ADDRESS_MODE_7BIT,
-    I2C_ADDRESS_MODE_10BIT,
+    I2C_ADDRESS_LEN_7BIT,
+    I2C_ADDRESS_LEN_10BIT,
+    I2C_ADDRESS_LEN_MAX
+} I2C_ADDRESS_LEN_t;
+
+typedef enum {
+    I2C_ADDRESS1_ONLY,
+    I2C_ADDRESS1_AND_2,
     I2C_ADDRESS_MODE_MAX
 } I2C_ADDRESS_MODE_t;
 
@@ -58,13 +64,12 @@ typedef enum {
 
 typedef enum {
     I2C_STATUS_RESET,
+    I2C_STATUS_INACTIVE,
     I2C_STATUS_READY,
-    I2C_STATUS_BUSY,
     I2C_STATUS_BUSY_TX,
     I2C_STATUS_BUSY_RX,
-    I2C_STATUS_LISTEN,
-    I2C_STATUS_BUSY_TX_LISTEN,
-    I2C_STATUS_BUSY_RX_LISTEN,
+    I2C_STATUS_DONE_RX,
+    I2C_STATUS_DONE_TX,
     I2C_STATUS_ABORT,
     I2C_STATUS_TIMEOUT,
     I2C_STATUS_ERROR,
@@ -82,6 +87,7 @@ typedef struct I2C_CTX const * const I2C_h;
 typedef struct {
     I2C_MODE_t mode;
     I2C_SPEED_t speed;
+    I2C_ADDRESS_LEN_t address_len;
     I2C_ADDRESS_MODE_t address_mode;
     uint16_t slave_address;
 #ifdef I2C_DUAL_ADDRESS

@@ -28,9 +28,9 @@ typedef enum {
 } GPIO_MODE_t;
 
 typedef enum {
-	GPIO_SPEED_2MHZ = 0x2,
-	GPIO_SPEED_10MHZ = 0x1,
-	GPIO_SPEED_50MHZ = 0x3,
+	GPIO_SPEED_SLOW = 0x2,
+	GPIO_SPEED_MODERATE = 0x1,
+	GPIO_SPEED_FAST = 0x3,
 	GPIO_DRIVE_MAX
 } GPIO_SPEED_t;
 
@@ -43,7 +43,59 @@ typedef enum {
 
 typedef enum {
 	// see datasheet for part and STM32CUBE hal
-	GPIO_ALT_I2C,
+	GPIO_ALT_0,
+	GPIO_ALT_1 = 0x1,
+	GPIO_ALT_2 = 0x2,
+	GPIO_ALT_3 = 0x3,
+	GPIO_ALT_4 = 0x4,
+	GPIO_ALT_5 = 0x5,
+	GPIO_ALT_6 = 0x6,
+	GPIO_ALT_7 = 0x7,
+
+	GPIO_ALT_EVENTOUT   = GPIO_ALT_0,  // AF0: EVENTOUT Alternate Function mapping  
+	GPIO_ALT_MCO        = GPIO_ALT_0,  // AF0: MCO Alternate Function mapping       
+	GPIO_ALT_SPI1       = GPIO_ALT_0,  // AF0: SPI1/I2S1 Alternate Function mapping 
+	GPIO_ALT_SPI2       = GPIO_ALT_0,  // AF0: SPI2 Alternate Function mapping      
+	GPIO_ALT_TIM15      = GPIO_ALT_0,  // AF0: TIM15 Alternate Function mapping     
+	GPIO_ALT_TIM17      = GPIO_ALT_0,  // AF0: TIM17 Alternate Function mapping     
+	GPIO_ALT_SWDIO      = GPIO_ALT_0,  // AF0: SWDIO Alternate Function mapping     
+	GPIO_ALT_SWCLK      = GPIO_ALT_0,  // AF0: SWCLK Alternate Function mapping     
+	GPIO_ALT_TIM14      = GPIO_ALT_0,  // AF0: TIM14 Alternate Function mapping     
+	GPIO_ALT_USART1     = GPIO_ALT_0,  // AF0: USART1 Alternate Function mapping    
+	GPIO_ALT_IR         = GPIO_ALT_0,  // AF0: IR Alternate Function mapping        
+	GPIO_ALT_CEC        = GPIO_ALT_0,  // AF0: CEC Alternate Function mapping    
+
+	GPIO_ALT_TIM3       = GPIO_ALT_1,  // AF1: TIM3 Alternate Function mapping      
+	GPIO_ALT_TIM15      = GPIO_ALT_1,  // AF1: TIM15 Alternate Function mapping     
+	GPIO_ALT_USART1     = GPIO_ALT_1,  // AF1: USART1 Alternate Function mapping    
+	GPIO_ALT_USART2     = GPIO_ALT_1,  // AF1: USART2 Alternate Function mapping    
+	GPIO_ALT_EVENTOUT   = GPIO_ALT_1,  // AF1: EVENTOUT Alternate Function mapping  
+	GPIO_ALT_I2C1       = GPIO_ALT_1,  // AF1: I2C1 Alternate Function mapping      
+	GPIO_ALT_I2C2       = GPIO_ALT_1,  // AF1: I2C2 Alternate Function mapping      
+	GPIO_ALT_IR         = GPIO_ALT_1,  // AF1: IR Alternate Function mapping        
+	GPIO_ALT_CEC        = GPIO_ALT_1,  // AF1: CEC Alternate Function mapping     
+
+	GPIO_ALT_TIM1       = GPIO_ALT_2,  // AF2: TIM1 Alternate Function mapping      
+	GPIO_ALT_TIM2       = GPIO_ALT_2,  // AF2: TIM2 Alternate Function mapping      
+	GPIO_ALT_TIM16      = GPIO_ALT_2,  // AF2: TIM16 Alternate Function mapping     
+	GPIO_ALT_TIM17      = GPIO_ALT_2,  // AF2: TIM17 Alternate Function mapping     
+	GPIO_ALT_EVENTOUT   = GPIO_ALT_2,  // AF2: EVENTOUT Alternate Function mapping  
+
+	GPIO_ALT_EVENTOUT   = GPIO_ALT_3,  // AF3: EVENTOUT Alternate Function mapping  
+	GPIO_ALT_I2C1       = GPIO_ALT_3,  // AF3: I2C1 Alternate Function mapping      
+	GPIO_ALT_TIM15      = GPIO_ALT_3,  // AF3: TIM15 Alternate Function mapping     
+	GPIO_ALT_TSC        = GPIO_ALT_3,  // AF3: TSC Alternate Function mapping     
+
+	GPIO_ALT_TIM14      = GPIO_ALT_4,  // AF4: TIM14 Alternate Function mapping     
+
+	GPIO_ALT_TIM16      = GPIO_ALT_5,  // AF5: TIM16 Alternate Function mapping     
+	GPIO_ALT_TIM17      = GPIO_ALT_5,  // AF5: TIM17 Alternate Function mapping     
+
+	GPIO_ALT_EVENTOUT   = GPIO_ALT_6,  // AF6: EVENTOUT Alternate Function mapping  
+
+	GPIO_ALT_COMP1      = GPIO_ALT_7,  // AF7: COMP1 Alternate Function mapping     
+	GPIO_ALT_COMP2      = GPIO_ALT_7,   // AF7: COMP2 Alternate Function mapping       
+	
 	GPIO_ALT_FUNC_MAX
 } GPIO_ALT_FUNCTION_t;
 
