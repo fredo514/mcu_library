@@ -6,13 +6,12 @@
 #include "error.h"
 #include "timer_def.h"	// contains platform-specific defines
 
-typedef TIMER_CTX_t * const TIMER_h;
+typedef struct TIMER_CTX * const TIMER_h;
 
 #define DISABLE false
 #define ENABLE true
 
 typedef struct {
-    bool state;
     TIMER_CNT_MODE_t counter_mode;
     TIMER_CLK_SRC_t clock_source;
     TIMER_CLK_MODE_t clock_mode;

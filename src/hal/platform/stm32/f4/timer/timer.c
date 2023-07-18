@@ -2,7 +2,7 @@
 #include "stm32_hal.h"
 #include "assert.h"
 
-typedef struct TIMER_CTX {
+struct TIMER_CTX {
   TIMER_REGS_t * const regs;
 };
 
