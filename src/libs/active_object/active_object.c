@@ -1,6 +1,6 @@
 #include "active_object.h"
-#include "state_machine.h"
 #include "ringfifo.h"
+#include "rtos.h"
 
 typedef void (*Dispatch_Handler)(AO_h ao, AO_EVENT_t * const evt);
 
@@ -9,14 +9,14 @@ struct AO_CTX {
     RINGFIFO_h evt_queue;       // queue of pointers to events
     Dispatch_Handler Dispatch;
     // active obkect data added by inheritance in subclasses
-}
+};
 
 struct AO_TIMEEVENT_CTX {
     AO_EVENT_t parent;
     AO_h requester;
     uint32_t timeout;
     uint32_t period;
-}
+};
 
 static AO_TIMEEVENT_h time_events[10];
 uint_fast8_t time_events_num;
@@ -70,14 +70,14 @@ ERROR_CODE_t Ao_Timeevent_Init(AO_TIMEEVENT_h time_event, AO_SIGNAL_t sig, AO_h 
 }
 
 ERROR_CODE_t Ao_Timeevent_Arm(AO_TIMEEVENT_h time_event, uint32_t timeout, uint32_t period) {
-    CRITICAL_SECTION(IRQ_ALL) {
+    CRITICAL_SECTION(SYSTICK_IRQ) {
         time_event->timeout = timeout;
         time_event->period = period;
     }
 }
 
 ERROR_CODE_t Ao_Timeevent_Stop(AO_TIMEEVENT_h time_event) {
-    CRITICAL_SECTION(IRQ_ALL) {
+    CRITICAL_SECTION(SYSTICK_IRQ) {
         time_event->timeout = 0;
     }
 }
