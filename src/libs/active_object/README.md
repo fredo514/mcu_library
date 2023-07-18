@@ -1,14 +1,14 @@
 bsp.h
 ```
 typedef enum {
-    BUTTON_PRESSED_SIG = HSM_SIG_USER_DEFINED_START,
+    BUTTON_PRESSED_SIG = AO_SIG_USER_DEFINED_START,
     BUTTON_RELEASED_SIG
-}
+} BLINKY_SIG;
 
 Bsp_Init(void);
 Bsp_Start(void);
 
-extern AO_h button_ao;
+extern AO_h blinky_ao;
 ```
 
 bsp.c
@@ -17,12 +17,12 @@ bsp.c
 
 static void Debounce(void) {
     if (button becomes pressed) {
-        static Ao_Event_t const button_pressed_event = {.signal = BLINKY_PRESSED_SIG};
-        Ao_Post(button_ao, &button_pressed_event);
+        static AO_EVENT_t const button_pressed_event = {.signal = BLINKY_PRESSED_SIG};
+        Ao_Post(blinky_ao, &button_pressed_event);
     }
     else if (button becomes released) {
-        static Ao_Event_t const button_released_event = {.signal = BLINKY_RELEASED_SIG};
-        Ao_Post(button_ao, &button_released_event);
+        static AO_EVENT_t const button_released_event = {.signal = BLINKY_RELEASED_SIG};
+        Ao_Post(blinky_ao, &button_released_event);
     }
 }
 

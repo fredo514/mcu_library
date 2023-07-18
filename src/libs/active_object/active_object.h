@@ -5,12 +5,18 @@
 #include "stdbool.h"
 #include "state_machine.h"
 
+typedef enum {
+    AO_SIG_EMPTY = 0,
+    AO_SIG_INIT,
+    AO_SIG_USER_DEFINED_START
+} AO_SIG_t;
+
 typedef struct {
-    HSM_SIG_t signal;
+    AO_SIG_t signal;
     // event parameters added by inheritance in subclasses
 } AO_EVENT_t;
 
-typedef bool (*AO_DISPATCH_HANDLER)(HSM_h sm, AO_EVENT_t const * const evt);
+typedef bool (*AO_DISPATCH_HANDLER)(AO_h ao, AO_EVENT_t const * const evt);
 
 typedef AO_TIMEEVENT_CTX * AO_TIMEEVENT_h;
 

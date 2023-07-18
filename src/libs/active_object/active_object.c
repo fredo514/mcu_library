@@ -36,7 +36,7 @@ static void Event_Loop(void * params) {
     AO_h ao = (AO_h)params;
     assert(ao);
 
-    static AO_EVENT_t const init_event = {HSM_SIG_INIT}
+    static AO_EVENT_t const init_event = {AO_SIG_INIT}
 
     (*ao->Dispatch)(ao, &init_event);
 
