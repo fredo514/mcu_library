@@ -1,4 +1,5 @@
-// bsp.h
+bsp.h
+```
 typedef enum {
     BUTTON_PRESSED_SIG = HSM_SIG_USER_DEFINED_START,
     BUTTON_RELEASED_SIG
@@ -8,9 +9,10 @@ Bsp_Init(void);
 Bsp_Start(void);
 
 extern AO_h button_ao;
+```
 
-
-// bsp.c
+bsp.c
+```
 #include "bsp.h"
 
 static void Debounce(void) {
@@ -34,9 +36,10 @@ Bsp_Init(void) {
     Core_Interrupt_Callback_Attach(SYSTICK_IRQ, &Systick_Handler);
     Core_Systick_Start();
 }
+```
 
-
-// main.c
+main.c
+```
 #include "bsp.h"
 
 typedef struct {
@@ -95,3 +98,4 @@ int main(void) {
 
     Rtos_Run();
 }
+```
