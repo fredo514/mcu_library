@@ -8,12 +8,12 @@ static uint8_t read_data = 0;
 static uint8_t write_data = 0;
 static uint8_t bits_done = 0;
 
-static void tx_done_callback(void);
-static uint8_t bit_to_byte(bool b);
+static void Tx_Done_Callback(void);
+static uint8_t Bit_To_Byte(bool b);
 
-void owi_master_init(OWI_MASTER_CONFIG_t const * config) {
+void Owi_Master_Init(OWI_MASTER_CONFIG_t const * config) {
     // abort pending transactions
-    owi_master_abort();
+    Owi_Master_Abort();
 
     // store uart instance to use
     uart = config->uart;
@@ -24,26 +24,26 @@ void owi_master_init(OWI_MASTER_CONFIG_t const * config) {
     uart->instance->BRR = 0x00001388;
     uart->instance->CR1 |= USART_CR1_UE;  // restore to previous state instead of blindly enabling it?
 
-    uart_cb_register(uart, UART_CB_TX_DONE, &tx_done_callback);
+    Uart_Callback_Register(uart, UART_Tx_Done_Callback, &Tx_Done_Callback);
 
     read_data = 0;
 }
 
-OWI_MASTER_STATE_t owi_master_state_get(void) {
+OWI_MASTER_STATE_t Owi_Master_State_Get(void) {
     return state;
 }
 
-void owi_master_abort(void) {
-    uart_flush_tx(uart);
+void Owi_Master_Abort(void) {
+    Uart_Flush_Tx(uart);
     state = OWI_MASTER_STATE_IDLE;
     presence = false;
 }
 
-bool owi_master_presence_get(void) {
+bool Owi_Master_Presence_Get(void) {
     return presence;
 }
 
-void owi_master_reset_pulse(void) {
+void Owi_Master_Reset_Pulse(void) {
     // ignore request if already busy
     if ((state != OWI_MASTER_STATE_IDLE) && (state != OWI_MASTER_STATE_FAIL)) {
         return;
@@ -52,7 +52,7 @@ void owi_master_reset_pulse(void) {
     state = OWI_MASTER_STATE_BUSY_RESET;
     presence = false;
 
-    uart_flush_rx(uart);
+    Uart_Flush_Rx(uart);
 
     // Set baudrate to 9600baud (assuming 48MHz clock), must be done with peripheral disabled
     uart->instance->CR1 &= ~(USART_CR1_UE);
@@ -60,10 +60,10 @@ void owi_master_reset_pulse(void) {
     uart->instance->CR1 |= USART_CR1_UE;    // TODO: restore to previous state instead of blindly enabling it?
 
     // 0xF0 at 9600baud is close enough to the reset pulse waveform spec
-    uart_char_send(uart, 0xF0);
+    Uart_Char_Send(uart, 0xF0);
 }
 
-void owi_master_byte_write(uint8_t data) {
+void Owi_Master_Byte_Write(uint8_t data) {
     // ignore request if already busy
     if ((state != OWI_MASTER_STATE_IDLE) && (state != OWI_MASTER_STATE_FAIL)) {
         return;
@@ -71,7 +71,7 @@ void owi_master_byte_write(uint8_t data) {
     
     state = OWI_MASTER_STATE_BUSY_WRITE;
 
-    uart_flush_rx(uart);
+    Uart_Flush_Rx(uart);
 
     // Set baudrate to 115200baud (assuming 48MHz clock), must be done with peripheral disabled
     uart->instance->CR1 &= ~(USART_CR1_UE);
@@ -79,12 +79,12 @@ void owi_master_byte_write(uint8_t data) {
     uart->instance->CR1 |= USART_CR1_UE;    // TODO: restore to previous state instead of blindly enabling it?
 
     // send first bit (0xFF if 1, 0x00 if 0)
-    uart_char_send(uart, bit_to_byte((bool)(data & 0x01)));
+    Uart_Char_Send(uart, Bit_To_Byte((bool)(data & 0x01)));
     write_data = data;
     bits_done = 1;
 }
 
-void owi_master_byte_read(void) {
+void Owi_Master_Byte_Read(void) {
     // ignore request if already busy
     if ((state != OWI_MASTER_STATE_IDLE) && (state != OWI_MASTER_STATE_FAIL)) {
         return;
@@ -92,7 +92,7 @@ void owi_master_byte_read(void) {
     
     state = OWI_MASTER_STATE_BUSY_READ;
 
-    uart_flush_rx(uart);
+    Uart_Flush_Rx(uart);
 
     // Set baudrate to 115200baud (assuming 48MHz clock), must be done with peripheral disabled
     uart->instance->CR1 &= ~(USART_CR1_UE);
@@ -100,10 +100,10 @@ void owi_master_byte_read(void) {
     uart->instance->CR1 |= USART_CR1_UE;    // TODO: restore to previous state instead of blindly enabling it?
 
     // 0xFF at 115200baud is close enough to the read slot waveform spec
-    uart_char_send(uart, 0xFF);
+    Uart_Char_Send(uart, 0xFF);
 }
 
-uint8_t owi_master_byte_get(void) {
+uint8_t Owi_Master_Byte_Get(void) {
     // return 0 if a byte is in process of being read
     if (OWI_MASTER_STATE_BUSY_READ == state) {
         return 0;
@@ -114,16 +114,16 @@ uint8_t owi_master_byte_get(void) {
     }
 }
 
-static void tx_done_callback(void) {
+static void Tx_Done_Callback(void) {
     // Make sure a char was received first
-    if (!uart_is_char_available(uart)) {
+    if (!Uart_Is_Char_Available(uart)) {
         state = OWI_MASTER_STATE_FAIL;
     }
     else {
         switch (state) {
             case OWI_MASTER_STATE_BUSY_RESET:
                 // receiving anything but 0xF0 during the reset pulse means a slave is present
-                if (uart_char_get(uart) != 0xF0) {
+                if (Uart_Char_Get(uart) != 0xF0) {
                     presence = true;
                 }
 
@@ -132,11 +132,11 @@ static void tx_done_callback(void) {
 
             case OWI_MASTER_STATE_BUSY_WRITE:
                 // check if received expected value
-                if ((write_data & 0x01) && (uart_char_get(uart) != 0xFF)) {
+                if ((write_data & 0x01) && (Uart_Char_Get(uart) != 0xFF)) {
                     // sent 1 should have received 0xFF
                     state = OWI_MASTER_STATE_FAIL;
                 }
-                else if (!(write_data & 0x01) && (uart_char_get(uart) != 0x00)) {
+                else if (!(write_data & 0x01) && (Uart_Char_Get(uart) != 0x00)) {
                     // sent 0 should have received 0x00
                     state = OWI_MASTER_STATE_FAIL;
                 }
@@ -147,7 +147,7 @@ static void tx_done_callback(void) {
                 }
                 else {
                     write_data >>= 1;
-                    uart_char_send(uart, bit_to_byte((bool)(write_data & 0x01)));
+                    Uart_Char_Send(uart, Bit_To_Byte((bool)(write_data & 0x01)));
                     bits_done++;
                 }
             break;
@@ -156,7 +156,7 @@ static void tx_done_callback(void) {
                 // shift received bit in buffer
                 read_data >>= 1;
                 // receiving anything else than 0xFF is 0
-                if (uart_char_get(uart) == 0xFF) {
+                if (Uart_Char_Get(uart) == 0xFF) {
                     read_data |= 0x80;
                 }
 
@@ -165,7 +165,7 @@ static void tx_done_callback(void) {
                     state = OWI_MASTER_STATE_IDLE;
                 }
                 else {
-                    uart_char_send(uart, 0xFF);
+                    Uart_Char_Send(uart, 0xFF);
                     bits_done++;
                 }
             break;
@@ -176,7 +176,7 @@ static void tx_done_callback(void) {
     }
 }
 
-static uint8_t bit_to_byte(bool b) {
+static uint8_t Bit_To_Byte(bool b) {
     if (b) {
         // 0xFF at 115200baud is close enough to the 1 write slot waveform spec
         return 0xFF;

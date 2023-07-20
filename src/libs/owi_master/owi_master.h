@@ -22,19 +22,18 @@ typedef struct
 	UART_h uart;
 } OWI_MASTER_CONFIG_t;
 
-void owi_master_init(OWI_MASTER_CONFIG_t const * config);
-void owi_master_abort(void);
-OWI_MASTER_STATE_t owi_master_state_get(void);
+void Owi_Master_Init(OWI_MASTER_CONFIG_t const * config);
+void Owi_Master_Abort(void);
+OWI_MASTER_STATE_t Owi_Master_State_Get(void);
 
-void owi_master_byte_write(uint8_t data);
-void owi_master_byte_read(void);
-uint8_t owi_master_byte_get(void);
+void Owi_Master_Byte_Write(uint8_t data);
+void Owi_Master_Byte_Read(void);
+uint8_t Owi_Master_Byte_Get(void);
 
-void owi_master_reset_pulse(void);
-bool owi_master_presence_get(void);
+void Owi_Master_Reset_Pulse(void);
+bool Owi_Master_Presence_Get(void);
 
 // TODO: strong pulse interface
-// void owi_master_strong_pullup_enable(void);
-// void owi_master_strong_pullup_disable(void);
+// void Owi_Master_Strong_Pullup(bool state);
 
 #endif // OWI_MASTER_H
