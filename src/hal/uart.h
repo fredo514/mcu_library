@@ -7,9 +7,9 @@
 #include "uart_def.h"	// contains platform-specific defines
 
 typedef enum {
-    UART_9K6_BAUD = 9600,
-    UART_57K6_BAUD = 57600,
-    UART_115K2_BAUD = 115200,
+    UART_BAUD_9600 = 9600,
+    UART_BAUD_57600 = 57600,
+    UART_BAUD_115200 = 115200,
     UART_BAUD_MAX
 } UART_BAUD_RATE_t;
 
@@ -35,7 +35,9 @@ typedef enum {
 } UART_PARITY_t;
 
 typedef enum {
-
+    UART_MODE_FULL_DUPLEX,
+    UART_MODE_HALF_DUPLEX,
+    UART_MODE_MAX
 } UART_MODE_t;
 
 typedef enum {
