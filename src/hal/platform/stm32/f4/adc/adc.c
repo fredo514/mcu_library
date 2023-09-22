@@ -1,8 +1,9 @@
 #include "adc.h"
+#include "assert.h"
 
 struct I2C_CTX {
     ADC_REGS_t const * const regs;
-
+    ADC_STATE_t state;
 };
 
 #define ENABLE_TIMEOUT_MS       2

@@ -86,12 +86,12 @@ tyedef enum {
 } ADC_TRIG_MODE_t;
 
 typedef enum {
-    ADC_STATUS_RESET,
-    ADC_STATUS_IDLE,
-    ADC_STATUS_BUSY,
-    ADC_STATUS_ERROR,
-    ADC_STATUS_MAX
-} ADC_STATUS_t;
+    ADC_STATE_RESET,
+    ADC_STATE_IDLE,
+    ADC_STATE_BUSY,
+    ADC_STATE_ERROR,
+    ADC_STATE_MAX
+} ADC_STATE_t;
 
 typedef uint32_t ADC_SAMPLE_t;
 
