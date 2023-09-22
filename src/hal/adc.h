@@ -28,6 +28,63 @@ typedef enum {
     ADC_CONV_MODE_MAX
 } ADC_CONV_MODE_t;
 
+tyedef enum {
+    ADC_RESOLUTION_12BITS,
+    ADC_RESOLUTION_10BITS,
+    ADC_RESOLUTION_MAX
+} ADC_RESOLUTION_t;
+
+tyedef enum {
+    ADC_CLK_SRC_HSI,
+    ADC_CLK_SRC_AHB,
+    ADC_CLK_SRC_MAX
+} ADC_CLK_SRC_t;
+
+tyedef enum {
+    ADC_CLK_DIV_1,
+    ADC_CLK_DIV_2,
+    ADC_CLK_DIV_4,
+    ADC_CLK_DIV_MAX
+} ADC_CLK_DIV_t;
+
+tyedef enum {
+    ADC_WAIT_CONV_FETCH,
+    ADC_WAIT_CONV_FREERUN,
+    ADC_WAIT_CONV_MAX
+} ADC_WAIT_CONV_t;
+
+tyedef enum {
+    ADC_AUTO_OFF_DISABLE,
+    ADC_AUTO_OFF_ENABLE,
+    ADC_AUTO_OFF_MAX
+} ADC_AUTO_OFF_t;
+
+tyedef enum {
+    ADC_SCAN_FORWARD,
+    ADC_SCAN_BACKWARD,
+    ADC_SCAN_DIR_MAX
+} ADC_SCAN_DIR_t;
+
+tyedef enum {
+    ADC_TRIG_SOFTWARE,
+    ADC_TRIG_TIM1_TRGO_RISING = (ADC_CFGR1_EXTEN | (ADC_CFGR1_EXTSEL << 4)),
+    ADC_TRIG_TIM1_TRGO_FALLING,
+    ADC_TRIG_TIM1_TRGO_RISING_FALLING,
+    ADC_TRIG_TIM1_CC_RISING,
+    ADC_TRIG_TIM1_CC_FALLING,
+    ADC_TRIG_TIM1_CC_RISING_FALLING,
+    ADC_TRIG_TIM2_TRGO_RISING,
+    ADC_TRIG_TIM2_TRGO_FALLING,
+    ADC_TRIG_TIM2_TRGO_RISING_FALLING,
+    ADC_TRIG_TIM3_TRGO_RISING,
+    ADC_TRIG_TIM3_TRGO_FALLING,
+    ADC_TRIG_TIM3_TRGO_RISING_FALLING,
+    ADC_TRIG_TIM15_TRGO_RISING,
+    ADC_TRIG_TIM15_TRGO_FALLING,
+    ADC_TRIG_TIM15_TRGO_RISING_FALLING,
+    ADC_TRIG_MODE_MAX
+} ADC_TRIG_MODE_t;
+
 typedef enum {
     ADC_STATUS_RESET,
     ADC_STATUS_IDLE,
@@ -41,7 +98,15 @@ typedef uint32_t ADC_SAMPLE_t;
 typedef struct ADC_CTX const * const ADC_h;
 
 typedef struct {
-    
+    ADC_RESOLUTION_t resolution;
+    ADC_CLK_SRC_t clk_source;
+    ADC_CLK_DIV_t clk_div;
+    ADC_SAMPLING_TIME_t sampling_time;
+    ADC_WAIT_CONV_t wait_conv;
+    ADC_AUTO_OFF_t auto_off;
+    ADC_CONV_MODE_t conv_mode;
+    ADC_SCAN_DIR_t scan_dir;
+    ADC_TRIG_MODE_t trig_mode;
 } ADC_CONFIG_t;
 
 ADC_h Adc_Create(ADC_REGS_t const * const regs);
