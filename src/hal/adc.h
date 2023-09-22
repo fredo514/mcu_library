@@ -117,6 +117,7 @@ ERROR_CODE_t Adc_Enable(ADC_h adc, ADC_MODE_t mode);
 ERROR_CODE_t Adc_Disable(ADC_h adc);
 ERROR_CODE_t Adc_Calibrate(ADC_h adc);
 
+ERROR_CODE_t Adc_Channel_Set(ADC_h adc, ADC_CHANNEL_t channel);
 ERROR_CODE_t Adc_Conversion_Start(ADC_h adc);
 bool Adc_Is_Conversion_Done(ADC_h adc);
 ADC_SAMPLE_t Adc_Reading_Get(ADC_h adc);
