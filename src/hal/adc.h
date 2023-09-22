@@ -113,14 +113,14 @@ ADC_h Adc_Create(ADC_REGS_t const * const regs);
 ERROR_CODE_t Adc_Init(ADC_h adc, ADC_CONFIG_t const * const config);
 ERROR_CODE_t Adc_Callback_Register(ADC_h adc, ADC_CALLBACK_ID_t const callback_id, void * cb);
 
-ERROR_CODE_t Adc_Start(ADC_h adc, ADC_MODE_t mode);
-ERROR_CODE_t Adc_Stop(ADC_h adc);
+ERROR_CODE_t Adc_Enable(ADC_h adc, ADC_MODE_t mode);
+ERROR_CODE_t Adc_Disable(ADC_h adc);
 ERROR_CODE_t Adc_Calibrate(ADC_h adc);
 
 ERROR_CODE_t Adc_Conversion_Start(ADC_h adc);
 bool Adc_Is_Conversion_Done(ADC_h adc);
 ADC_SAMPLE_t Adc_Reading_Get(ADC_h adc);
-ADC_SAMPLE_t Adc_Read(ADC_h adc, uint32_t timeout_ms); // blocking
+ADC_SAMPLE_t Adc_Channel_Read(ADC_h adc, ADC_CHANNEL_t channel, uint32_t timeout_ms); // blocking
 
 // Use these SPARINGLY to extend the API
 ERROR_CODE_t Adc_Reg_Write (REG_SIZE_t * const address, uint32_t const val);

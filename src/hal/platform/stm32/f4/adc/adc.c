@@ -159,7 +159,12 @@ ADC_SAMPLE_t Adc_Reading_Get(ADC_h adc) {
     return adc->regs->DR;
 }
 
-ADC_SAMPLE_t Adc_Read(ADC_h adc, uint32_t timeout_ms) {
+ADC_SAMPLE_t Adc_Channel_Read(ADC_h adc, ADC_CHANNEL_t channel, uint32_t timeout_ms) {
+    assert(!(adc->regs->CR & ADC_CR_ADSTART); // make sure no conversion already ongoing
+
+    // select only desired channel
+    adc->regs->CHSELR = channel
+    
     Adc_Conversion_Start(adc);
 
     while (!Adc_Is_Conversion_Done(adc)) {
