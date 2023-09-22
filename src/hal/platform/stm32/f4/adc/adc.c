@@ -5,6 +5,10 @@ struct I2C_CTX {
 
 };
 
+#define ENABLE_TIMEOUT_MS       2
+#define DISABLE_TIMEOUT_MS      2
+#define STOP_CONV_TIMEOUT_MS    2
+
 ADC_h Adc_Create(ADC_REGS_t const * const regs) {
     ADC_h inst = calloc(1, sizeof(struct I2C_CTX));
     inst->regs = regs;
@@ -14,7 +18,11 @@ ADC_h Adc_Create(ADC_REGS_t const * const regs) {
 }
 
 ERROR_CODE_t Adc_Init(ADC_h adc, ADC_CONFIG_t const * const config) {
-    // enable clock
+    assert(adc); // valid adc instance
+    assert(adc->status == ADC_STATUS_RESET); // adc is not already initialized
+    
+    // enable HSI14 clock
+    // enable adc clock 
     // load offset calibration from nvm to calib register
     // confugure acquisition
     // configure pins

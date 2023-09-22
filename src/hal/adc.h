@@ -7,13 +7,15 @@
 #include "stdint.h"
 
 typedef enum {
-    ADC_CONV_DONE_CALLBACK,
-    ADC_ERROR_CALLBACK,
+    ADC_READY_CALLBACK,
+    ADC_NEW_SAMPLE_CALLBACK,
+    ADC_SEQ_DONE_CALLBACK,
+    ADC_OVERRUN_ERROR_CALLBACK,
     ADC_CB_ID_MAX
 } ADC_CALLBACK_ID_t;
 
 typedef enum {
-    ADC_MODE_MANUAL,
+    ADC_MODE_POLL,
     ADC_MODE_INTERRUPT,
     ADC_MODE_DMA,
     ADC_MODE_MAX
@@ -48,6 +50,7 @@ ERROR_CODE_t Adc_Callback_Register(ADC_h adc, ADC_CALLBACK_ID_t const callback_i
 
 ERROR_CODE_t Adc_Start(ADC_h adc, ADC_MODE_t mode);
 ERROR_CODE_t Adc_Stop(ADC_h adc);
+ERROR_CODE_t Adc_Calibrate(ADC_h adc);
 
 ERROR_CODE_t Adc_Conversion_Start(ADC_h adc);
 bool Adc_Is_Conversion_Done(ADC_h adc);
