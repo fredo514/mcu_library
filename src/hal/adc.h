@@ -28,44 +28,44 @@ typedef enum {
     ADC_CONV_MODE_MAX
 } ADC_CONV_MODE_t;
 
-tyedef enum {
+typedef enum {
     ADC_RESOLUTION_12BITS,
     ADC_RESOLUTION_10BITS,
     ADC_RESOLUTION_MAX
 } ADC_RESOLUTION_t;
 
-tyedef enum {
+typedef enum {
     ADC_CLK_SRC_HSI,
     ADC_CLK_SRC_AHB,
     ADC_CLK_SRC_MAX
 } ADC_CLK_SRC_t;
 
-tyedef enum {
+typedef enum {
     ADC_CLK_DIV_1,
     ADC_CLK_DIV_2,
     ADC_CLK_DIV_4,
     ADC_CLK_DIV_MAX
 } ADC_CLK_DIV_t;
 
-tyedef enum {
+typedef enum {
     ADC_WAIT_CONV_FETCH,
     ADC_WAIT_CONV_FREERUN,
     ADC_WAIT_CONV_MAX
 } ADC_WAIT_CONV_t;
 
-tyedef enum {
+typedef enum {
     ADC_AUTO_OFF_DISABLE,
     ADC_AUTO_OFF_ENABLE,
     ADC_AUTO_OFF_MAX
 } ADC_AUTO_OFF_t;
 
-tyedef enum {
+typedef enum {
     ADC_SCAN_FORWARD,
     ADC_SCAN_BACKWARD,
     ADC_SCAN_DIR_MAX
 } ADC_SCAN_DIR_t;
 
-tyedef enum {
+typedef enum {
     ADC_TRIG_SOFTWARE,
     ADC_TRIG_TIM1_TRGO_RISING = (ADC_CFGR1_EXTEN | (ADC_CFGR1_EXTSEL << 4)),
     ADC_TRIG_TIM1_TRGO_FALLING,
