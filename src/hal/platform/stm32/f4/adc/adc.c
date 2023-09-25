@@ -1,5 +1,6 @@
 #include "adc.h"
 #include "assert.h"
+#include "macros.h"
 
 struct I2C_CTX {
     ADC_REGS_t const * const regs;
@@ -22,43 +23,63 @@ ERROR_CODE_t Adc_Init(ADC_h adc, ADC_CONFIG_t const * const config) {
     assert(adc); // valid adc instance
 
     // stop ongoing conversion
-    adc->regs->CR |= ADC_CR_ADSTP
+    adc->regs->CR |= ADC_CR_ADSTP;
     // wait until cleared
     while (adc->regs->CR & ADC_CR_ADSTP) {
-        // TODO: add timeout
+        // TODO: add 2ms timeout
     }
 
 	// disable adc if enabled
     if (adc->regs->CR & ADC_CR_ADEN) {
-        adc->regs->CR | ADC_CR_ADDIS;
+        adc->regs->CR |= ADC_CR_ADDIS;
         // wait until cleared
         while (adc->regs->CR & ADC_CR_ADDIS) {
-            // TODO: add timeout
+            // TODO: add 2ms timeout
         }
     }
-    
-    // enable adc clock
+
+	adc->regs->CFGR1 = 0;
+
+	// enable adc clock
+	if (adc->regs == ADC1) {
+		SET_MASK(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);
+	}
+	else {
+		// TODO: use assert
+		return ERROR_NO_DEV;
+	}
+   
+	// set clock source
     switch (config->clk_source) {
         case ADC_CLK_SRC_HSI:
+			// Disable ADC control of the Internal High Speed oscillator
+			SET_MASK(RCC->CR2, RCC_CR2_HSI14DIS);
+
+			// Enable the Internal High Speed oscillator
+			SET_MASK(RCC->CR2, RCC_CR2_HSI14ON);
+
+			// Wait till HSI is ready
+			while (!(RCC->CR2 & RCC_CR2_HSI14RDY)) {
+				// TODO: add 2ms timeout
+			}
+
+			// Adjust the Internal High Speed oscillator calibration value, hardcode to 16 for now
+			MODIFY_MASK(RCC->CR2, RCC_CR2_HSI14TRIM, 16 << RCC_CR2_HSI14TRIM_Pos);
         break;
 
-        case ADC_CLK_SRC_AHB:
-            // clock prescaler, only if clocked from perrpheral clock
-            adc->regs->CFGR2 &= ~ADC_CFGR2_MODE_MSK;
-            adc->regs->CFGR2 |= config->clk_prescaler;
+        case ADC_CLK_SRC_PCLK:
         break;
 
         default:
-            assert(0);
+            // TODO: use assert
+            return ERROR_INVALID_PARAM;
     }
-    
-    // configure acquisition
-    // resolution
-    adc->regs->CFGR1 &= ~ADC_CFGR1_RES_MSK;
-    adc->regs->CFGR1 |= config->resolution;
 
-    // other modes
-    adc->regs->CFGR1 &= ~(  ADC_CFGR1_DISCEN  |
+	// set clock prescaler (nothing else in CFGR2)
+	adc->regs->CFGR2 = config->clk_div;
+
+    // configure acquisition, first clear all options
+	adc->regs->CFGR1 &= ~(  ADC_CFGR1_DISCEN  |
                             ADC_CFGR1_AUTOFF  |
                             ADC_CFGR1_AUTDLY  |
                             ADC_CFGR1_CONT    |
@@ -68,6 +89,7 @@ ERROR_CODE_t Adc_Init(ADC_h adc, ADC_CONFIG_t const * const config) {
                             ADC_CFGR1_ALIGN   |
                             ADC_CFGR1_SCANDIR |
                             ADC_CFGR1_DMACFG   );
+
     adc->regs->CFGR1 |= config->auto_conv;
     adc->regs->CFGR1 |= config->auto_off;
     adc->regs->CFGR1 |= config->scan_dir;
@@ -89,8 +111,11 @@ ERROR_CODE_t Adc_Init(ADC_h adc, ADC_CONFIG_t const * const config) {
             assert(0);
     }
 
-    adc->regs->SMPR &= ~(ADC_SMPR_SMP);
-    adc->regs->SMPR |= config->sampling_time;
+    //set resolution
+	MODIFY_MASK(adc->regs->CFGR1, ADC_CFGR1_RES_Msk, config->resolution);
+
+	// set sampling time
+	MODIFY_MASK(adc->regs->SMPR, ADC_SMPR_SMP_Msk, config->sampling_time);
 
     // configure channels
 
@@ -137,7 +162,7 @@ ERROR_CODE_t Adc_Conversion_Start(ADC_h adc) {
     assert(!(adc->regs->CR & ADC_CR_ADSTART); // make sure no conversion already ongoing
 
     // clear dangling errors
-    adc->regs->ISR &= ~(ADC_FLAG_EOC | ADC_FLAG_EOS | ADC_FLAG_OVR);
+    CLEAR_MASK(adc->regs->ISR, (ADC_ISR_EOC | ADC_ISR_EOS | ADC_ISR_OVR));
     
     // start conversion
     adc->regs->CR |= ADC_CR_ADSTART;
@@ -148,10 +173,10 @@ ERROR_CODE_t Adc_Conversion_Start(ADC_h adc) {
 bool Adc_Is_Conversion_Done(ADC_h adc) {
     // check if single conversion mode
     if (adc->regs->CR & ADC_CFGR1_DISCEN) {
-        return ((adc->regs->ISR & ADC_FLAG_EOC) && (adc->regs->ISR & ADC_FLAG_EOS));
+        return ((adc->regs->ISR & ADC_ISR_EOC) && (adc->regs->ISR & ADC_ISR_EOS));
     }
     else {
-        return (adc->regs->ISR & ADC_FLAG_EOS);
+        return (adc->regs->ISR & ADC_ISR_EOS);
     }
 }
 
@@ -163,7 +188,7 @@ ADC_SAMPLE_t Adc_Channel_Read(ADC_h adc, ADC_CHANNEL_t channel, uint32_t timeout
     assert(!(adc->regs->CR & ADC_CR_ADSTART); // make sure no conversion already ongoing
 
     // select only desired channel
-    adc->regs->CHSELR = channel
+    adc->regs->CHSELR = 1 << channel;
     
     Adc_Conversion_Start(adc);
 

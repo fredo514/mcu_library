@@ -5,10 +5,12 @@
 #define SET_BIT(REG, BIT)     ((REG) |= (1<<(BIT)))
 #define CLEAR_BIT(REG, BIT)   ((REG) &= ~(1<<(BIT)))
 #define READ_BIT(REG, BIT)    ((REG) & (1<<(BIT)))
+#define MODIFY_BIT(REG, BIT, VAL)  ((REG) = (((REG) & (~(1<<(BIT)))) | ((VAL)<<BIT)))
 
 #define SET_MASK(REG, MASK)     ((REG) |= (MASK))
 #define CLEAR_MASK(REG, MASK)   ((REG) &= ~(MASK))
 #define READ_MASK(REG, MASK)    ((REG) & (MASK))
+#define MODIFY_MASK(REG, CLEARMASK, SETMASK)  ((REG) = (((REG) & (~(CLEARMASK))) | (SETMASK)))
 
 // unique temporary variable name for macros
 #define MACRO_VAR(name) (name##__LINE__)  
