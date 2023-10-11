@@ -1,16 +1,20 @@
 #include "i2c.h"
 #include "stdint.h"
 
+typedef union {
+    void (*Address_Match_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation, uint16_t address);
+    bool (*Slave_Rx_Ack_Cb)(I2C_h i2c, uint8_t byte);
+    void (*Slave_Done_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation);
+    void (*Generic_Cb)(I2C_h i2c);
+} CALLBACK_t;
+
 struct I2C_CTX {
     I2C_REGS_t const * const regs;
     I2C_MODE_t mode;
     uint8_t * buffer_ptr;
     I2C_STATE_t state;
     uint8_t index;
-
-    void (*Address_Match_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation, uint16_t address);
-    bool (*Slave_Rx_Ack_Cb)(I2C_h i2c, uint8_t byte);
-    void (*Slave_Done_Cb)(I2C_h i2c, I2C_XFER_DIR_t operation);
+    CALLBACK_t callbacks[I2C_CB_ID_MAX];
 };
 
 static void Irq_Ev_Handler(I2C_h i2c);
@@ -97,8 +101,8 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config) {
 	
     // clean callbacks
     // Attach dummy function to callbacks to avoid error if interrupt is called before app attaches its own
-	i2c->Address_Match_Cb = &Dummy_Addr_Callback;	
-	i2c->Slave_Rx_Ack_Cb = &Dummy_Rx_Ack;
+	i2c->callbacks[I2C_ADDRESS_MATCH_CALLBACK].Address_Match_Cb = &Dummy_Addr_Callback;	
+	i2c->callbacks[I2C_SLAVE_RX_ACK_CALLBACK].Slave_Rx_Ack_Cb = &Dummy_Rx_Ack;
 	// Attach dummy buffer for if app forgets to attach its own
 	i2c_buffer_attach(me, &dummy_buffer, 1);
 	me->index = 0;
@@ -140,31 +144,10 @@ I2C_STATUS_t I2c_Buffer_Attach(I2C_h i2c, uint8_t const * const buffer_ptr, uint
     return NO_ERROR;
 }
 
-ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void * cb) {
-    switch (callback_id) {
-        case I2C_ADDRESS_MATCH_CALLBACK:
-            if (NULL == cb) {
-                i2c->Address_Match_Cb = &Dummy_Addr_Callback;
-            }
-            else {
-                i2c->Address_Match_Cb = (void (*func)(I2C_XFER_DIR_t dir, uint16_t address))cb;
-            }
-        break;
-
-        case I2C_SLAVE_RX_ACK_CALLBACK:
-            if (NULL == cb) {
-                i2c->Slave_Rx_Ack_Cb = &Dummy_Rx_Ack_Callback;
-            }
-            else {
-                i2c->Slave_Rx_Ack_Cb = (bool (*func)(uint8_t byte))cb;
-            }
-        break; 
-
-        default:
-            return ERROR_INVALID_PARAM;
-    }
-
-    return SUCCESS;
+void I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void * cb) {
+    Assert(callback_id < I2C_CB_ID_MAX);
+    
+    i2c->callbacks[callback_id].Generic_Cb = cb
 }
 
 static void Irq_Ev_Handler(I2C_h i2c) {
@@ -185,10 +168,10 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             i2c->regs->CR1 &= ~(I2C_ISR_RXNE | I2C_CR1_TCIE | I2C_CR1_TXIE);
 
             if(i2c->state == I2C_STATUS_BUSY_TX) {
-                i2c->Callbacks[I2C_MASTER_TX_DONE_CALLBACK](i2c);
+                i2c->Callbacks[I2C_SLAVE_TX_DONE_CALLBACK].Generic_Cb(i2c);
             }
             else if(me->status == I2C_STATUS_BUSY_RX) {
-                i2c->Callbacks[I2C_MASTER_RX_DONE_CALLBACK](i2c);
+                i2c->Callbacks[I2C_SLAVE_RX_DONE_CALLBACK].Generic_Cb(i2c);
             }
             else if () {
                 // other ones
@@ -222,7 +205,7 @@ static void Irq_Ev_Handler(I2C_h i2c) {
             uint16_t addr = (uint16_t)((i2c->regs->ISR & I2C_ISR_ADDR) >> I2C_ISR_ADDR_Pos);
 
             // call address match hit callback
-            i2c->Address_Match_Cb(dir, addr);
+            i2c->Callbacks[I2C_ADDRESS_MATCH_CALLBACK].Address_Match_Cb(i2c, dir, addr);
             
             // check direction
             if (dir == I2C_XFER_DIR_WRITE) {
@@ -296,7 +279,7 @@ static void Irq_Ev_Handler(I2C_h i2c) {
                 i2c->index++;
 
                 // check with app to decide what ACK to answer
-                if (i2c->Slave_Rx_Ack_Cb((uint8_t)i2c->regs->RXDR)) {
+                if (i2c->Callbacks[I2C_SLAVE_RX_ACK_CALLBACK].Slave_Rx_Ack_Cb((uint8_t)i2c->regs->RXDR)) {
                     // true, answer ACK
                     i2c->regs->CR2 &= ~I2C_CR2_NACK;
                 }
