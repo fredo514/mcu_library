@@ -145,7 +145,7 @@ ERROR_CODE_t Adc_Calibrate(ADC_h adc) {
     adc->regs->CFGR1 &= ~(ADC_CFGR1_DMAEN | ADC_CFGR1_DMACFG);
 
     // start calibration
-    adc->regs->CR &= ADC_CR_ADCAL;
+    adc->regs->CR |= ADC_CR_ADCAL;
 
     // wait until done
     while (adc->regs->CR & ADC_CR_ADCAL) {
