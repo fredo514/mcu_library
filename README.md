@@ -35,4 +35,4 @@ Make sure that your compilation script (e.g. makefile) includes all the necessar
 * src/hal
 * src/hal/platform
 * src/hal/platform/<path_to_specific_platform>/common
-* src/hal/platform/<path_to_specific_platform>/<family>/<used_module>
+* src/hal/platform/<path_to_specific_platform>/<platform_family>/<used_module>
