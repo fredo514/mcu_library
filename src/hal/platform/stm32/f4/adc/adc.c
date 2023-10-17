@@ -2,7 +2,7 @@
 #include "assert.h"
 #include "macros.h"
 
-struct I2C_CTX {
+struct ADC_CTX {
     ADC_REGS_t const * const regs;
     ADC_STATE_t state;
 };
@@ -12,7 +12,7 @@ struct I2C_CTX {
 #define STOP_CONV_TIMEOUT_MS    2
 
 ADC_h Adc_Create(ADC_REGS_t const * const regs) {
-    ADC_h inst = calloc(1, sizeof(struct I2C_CTX));
+    ADC_h inst = calloc(1, sizeof(struct ADC_CTX));
     inst->regs = regs;
     inst->status = ADC_STATUS_RESET;
 
