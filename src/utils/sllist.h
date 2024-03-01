@@ -1,4 +1,6 @@
-# singly linked list
+// singly linked list
+
+// wrap the node content with a slnode_t into a struct
 
 struct _snode {
         struct _snode *next;

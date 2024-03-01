@@ -1,6 +1,6 @@
-# doubly linked list
+// doubly linked list
 
-# singly linked list
+// wrap the node content with a slnode_t into a struct
 
 struct _dnode {
         struct _dnode *previous;
