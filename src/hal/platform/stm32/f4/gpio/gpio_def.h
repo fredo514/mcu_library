@@ -1,6 +1,26 @@
 #ifndef GPIO_DEF_H
 #define GPIO_DEF_H
 
+typedef enum {
+	GPIO_PIN_0 = 0,
+	GPIO_PIN_1 = 1,
+	GPIO_PIN_2 = 2,
+	GPIO_PIN_3 = 3,
+	GPIO_PIN_4 = 4,
+	GPIO_PIN_5 = 5,
+	GPIO_PIN_6 = 6,
+	GPIO_PIN_7 = 7,
+	GPIO_PIN_8 = 8,
+	GPIO_PIN_9 = 9,
+	GPIO_PIN_10 = 10,
+	GPIO_PIN_11 = 11,
+	GPIO_PIN_12 = 12,
+	GPIO_PIN_13 = 13,
+	GPIO_PIN_14 = 14,
+	GPIO_PIN_15 = 15,
+	GPIO_PIN_MAX
+} GPIO_PIN_t;
+
 // resgiters settings are encoded in the enum value to simplify the init function
 // bits: | 11 8 | 7    4 | 3   0 |
 //              | otyper | moder |
@@ -98,5 +118,32 @@ typedef enum {
 	
 	GPIO_ALT_FUNC_MAX
 } GPIO_ALT_FUNCTION_t;
+
+typedef struct {
+  GPIO_TypeDef* port;
+  gpio_pin_t pin;
+} gpio_t;
+
+extern gpio_t pin_A1;
+extern gpio_t pin_A4;
+extern gpio_t pin_A5;
+extern gpio_t pin_A7;
+extern gpio_t pin_A8;
+extern gpio_t pin_A9;
+extern gpio_t pin_A10;
+extern gpio_t pin_A11;
+extern gpio_t pin_A12;
+extern gpio_t pin_A15;
+
+typedef struct {
+  gpio_state_t initial_state;
+  gpio_mode_t mode;       // Specifies the operating mode for the selected pins
+  gpio_pull_type_t pull;  // Specifies the Pull-up or Pull-Down activation for
+                          // the selected pins
+  gpio_speed_t speed;
+  gpio_alt_function_t
+      alt_function;  // Peripheral to be connected to the selected pins if
+                     // alternate function mode is selected
+} gpio_config_t;
 
 #endif // GPIO_DEF_H

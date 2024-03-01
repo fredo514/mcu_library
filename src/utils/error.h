@@ -23,7 +23,8 @@ typedef enum
     ERROR_FORBIDDEN,            // Operation not allowed in this state. 
     ERROR_UNINITIALIZED,        // Instance not configured     
     ERROR_ALREADY_INITIALIZED,  // Instance already configured  
-    ERROR_OVERRUN               // Buffer overflow.                      
+    ERROR_OVERRUN,               // Buffer overflow.
+    ERROR_MAX                      
 } ERROR_CODE_t; 
 
 /**@brief Macro for calling error handler if supplied error code any other than SUCCESS. 

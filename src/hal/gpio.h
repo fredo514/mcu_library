@@ -12,36 +12,12 @@ typedef enum {
 	GPIO_STATE_MAX
 } GPIO_STATE_t;
 
-typedef enum {
-	GPIO_PIN_0 = 0,
-	GPIO_PIN_1 = 1,
-	GPIO_PIN_2 = 2,
-	GPIO_PIN_3 = 3,
-	GPIO_PIN_4 = 4,
-	GPIO_PIN_5 = 5,
-	GPIO_PIN_6 = 6,
-	GPIO_PIN_7 = 7,
-	GPIO_PIN_8 = 8,
-	GPIO_PIN_9 = 9,
-	GPIO_PIN_10 = 10,
-	GPIO_PIN_11 = 11,
-	GPIO_PIN_12 = 12,
-	GPIO_PIN_13 = 13,
-	GPIO_PIN_14 = 14,
-	GPIO_PIN_15 = 15,
-	GPIO_PIN_MAX
-} GPIO_PIN_t;
-
 typedef GPIO_CTX_t const * const GPIO_h;
 
 typedef struct {
-    GPIO_h gpio;
-	GPIO_MODE_t mode;
-	GPIO_STATE_t init_state;
-	GPIO_ALT_FUNCTION_t alt_function;
-    GPIO_PULL_t pull;
-	GPIO_SPEED_t speed;
-} GPIO_CONFIG_t;
+  gpio_t* gpio;
+  gpio_config_t config;
+} gpio_init_t;
 
 GPIO_h Gpio_Create(GPIO_PORT_t const * const port, GPIO_PIN_t const pin);
 ERROR_CODE_t Gpio_Init(GPIO_CONFIG_t const * const config);
