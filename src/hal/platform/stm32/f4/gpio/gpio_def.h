@@ -124,17 +124,6 @@ typedef struct {
   gpio_pin_t pin;
 } gpio_t;
 
-extern gpio_t pin_A1;
-extern gpio_t pin_A4;
-extern gpio_t pin_A5;
-extern gpio_t pin_A7;
-extern gpio_t pin_A8;
-extern gpio_t pin_A9;
-extern gpio_t pin_A10;
-extern gpio_t pin_A11;
-extern gpio_t pin_A12;
-extern gpio_t pin_A15;
-
 typedef struct {
   gpio_state_t initial_state;
   gpio_mode_t mode;       // Specifies the operating mode for the selected pins
