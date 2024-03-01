@@ -121,7 +121,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
 
         // Calculate derivative term using derivative on measurement to avoid derivative kick
         // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
-        pid->last_deriv = pid->last_deriv + (α * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
+        pid->last_deriv = pid->last_deriv + (pid->alpha_deriv * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
         // could also use a small FIR filter such as: (TODO, replace with Fir_Filt instance)
         // pid->last_deriv[0] = pid->d_gain * (input_deriv - last_deriv[2] + 3*(last_deriv[0] - last_deriv[1])) / 6;
         // d_term is negative due to using derivative on measurement
@@ -130,7 +130,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         // Clamp to avoid windup and store
         output = Clamp(pid, output);
         // CO filter
-        output = pid->last_output + ((sampling_period / (pid->alpha * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
+        output = pid->last_output + ((sampling_period / (pid->alpha_co * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
         pid->last_output = output;
 
         // Update intergral sum at the end for faster response time

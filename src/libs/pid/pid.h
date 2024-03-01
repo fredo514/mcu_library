@@ -1,13 +1,10 @@
 #ifndef PID_H
 #define PID_H
 
+#include "pid_config.h"
 #include "error.h"
 
 // TODO: feed-forward, reset tieback, integer math, different form, velocity instead of position, setpoint ramping
-
-typedef PID_DATA_t float;
-
-#define PID_SIMPLE_ERROR_CB 0
 
 typedef enum {
     PID_MODE_ACTIVE = 0,
