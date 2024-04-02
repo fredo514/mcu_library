@@ -1,5 +1,6 @@
 #include "uart.h"
 #include "ring_fifo.h"
+#include "macros.h"
 
 typedef struct UART_CTX {
     UART_REGS_t const * const regs;
@@ -91,11 +92,12 @@ static void Irq_Handler(UART_h uart) {
     if (uart->regs->SR & USART_SR_TXE) {
         // check if still data to send
         if (!Ringfifo_Is_Empty(uart->tx_fifo)) {
-            uart->regs->DR = Ringfifo_Pop(uart->tx_fifo);
+            Io_Write(uart->regs->DR, Ringfifo_Pop(uart->tx_fifo));
         }
         else {
             // Done, disable transmit interrupt
-            uart->regs->CR1 &= ~USART_CR1_TXEIE;
+            CLEAR_MASK(uart->regs->CR1, USART_CR1_TXEIE);
+            //uart->regs->CR1 &= ~USART_CR1_TXEIE;
         }
     }
 }

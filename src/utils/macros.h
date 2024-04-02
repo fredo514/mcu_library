@@ -1,6 +1,8 @@
 #ifndef MACROS_H
 #define	MACROS_H
 
+#include "io.h"
+
 // bitfield manipulation
 #define SET_BIT(REG, BIT)     ((REG) |= (1<<(BIT)))
 #define CLEAR_BIT(REG, BIT)   ((REG) &= ~(1<<(BIT)))
