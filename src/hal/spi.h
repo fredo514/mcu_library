@@ -14,6 +14,13 @@ typedef enum {
     SPI_CALLBACK_ID_MAX
 } SPI_CALLBACK_ID_t;
 
+typedef enum {
+    SPI_STATUS_IDLE,
+    SPI_STATUS_BUSY,
+    SPI_STATUS_ERROR,
+    SPI_STATUS_MAX
+} SPI_STATUS_t
+
 typedef SPI_CTX_t * const SPI_h;
 
 typedef struct {
@@ -33,7 +40,8 @@ ERROR_CODE_t Spi_Buffer_Attach(SPI_h spi, uint8_t const * const buf);
 ERROR_CODE_t Spi_Mode_Set(SPI_h spi, SPI_MODE_t const mode);
 SPI_STATUS_t Spi_Status_Get(SPI_h spi);
 
-uint8_t Spi_Exchange(SPI_h spi, uint8_t const * const tx_buf, uint8_t const * const rx_buf, uint8_t len);
+uint8_t Spi_Exchange(SPI_h spi, uint8_t const tx_data);
+ERROR_CODE_t Spi_Exchange_Buffer(SPI_h spi, uint8_t const * const tx_buf, uint8_t const * const rx_buf, uint8_t len);
 
 // Use these SPARINGLY to extend the API
 ERROR_CODE_t Spi_Reg_Write (REG_SIZE_t * const address, uint32_t const val);
