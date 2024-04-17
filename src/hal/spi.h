@@ -44,7 +44,7 @@ uint8_t Spi_Exchange(SPI_h spi, uint8_t const tx_data);
 ERROR_CODE_t Spi_Exchange_Buffer(SPI_h spi, uint8_t const * const tx_buf, uint8_t const * const rx_buf, uint8_t len);
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE_t Spi_Reg_Write (REG_SIZE_t * const address, uint32_t const val);
-REG_SIZE_t Spi_Reg_Read (REG_SIZE_t * const address);
+ERROR_CODE_t Spi_Reg_Write(REG_SIZE_t * const address, uint32_t const val);
+REG_SIZE_t Spi_Reg_Read(REG_SIZE_t * const address);
 
 #endif // SPI_H

@@ -109,7 +109,7 @@ ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c);
 ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c);
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE_t I2c_Reg_Write (REG_SIZE_t * const address, REG_SIZE_t const val);
-REG_SIZE_t I2c_Reg_Read (REG_SIZE_t * const address);
+ERROR_CODE_t I2c_Reg_Write(REG_SIZE_t * const address, REG_SIZE_t const val);
+REG_SIZE_t I2c_Reg_Read(REG_SIZE_t * const address);
 
 #endif // I2C_H

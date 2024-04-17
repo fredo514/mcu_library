@@ -36,7 +36,7 @@ bool Gpio_Is_High(GPIO_h gpio);  // for input
 bool Gpio_Is_Low(GPIO_h gpio);  // for input
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE_t Gpio_Reg_Write (REG_SIZE_t const address, uint32_t const val);
-REG_SIZE_t Gpio_Reg_Read (REG_SIZE_t const address);
+ERROR_CODE_t Gpio_Reg_Write(REG_SIZE_t const address, uint32_t const val);
+REG_SIZE_t Gpio_Reg_Read(REG_SIZE_t const address);
 
 #endif // GPIO_H

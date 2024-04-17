@@ -80,7 +80,7 @@ bool Uart_Is_Tx_Full(UART_h uart);
 bool Uart_Is_Tx_Done(UART_h uart);
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE_t Uart_Reg_Write (REG_SIZE_t * const address, uint32_t const val);
-REG_SIZE_t Uart_Reg_Read (REG_SIZE_t * const address);
+ERROR_CODE_t Uart_Reg_Write(REG_SIZE_t * const address, uint32_t const val);
+REG_SIZE_t Uart_Reg_Read(REG_SIZE_t * const address);
 
 #endif // UART_H

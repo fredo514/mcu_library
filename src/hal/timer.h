@@ -32,7 +32,7 @@ uint32_t Timer_Count_Get(TIMER_h timer);
 ERROR_CODE_t Timer_Count_Set(TIMER_h timer, uint32_t const count);
 
 // Use these SPARINGLY to extend the API
-ERROR_CODE_t Timer_Reg_Write (REG_SIZE_t * const address, uint32_t const val);
-REG_SIZE_t Timer_Reg_Read (REG_SIZE_t * const address);
+ERROR_CODE_t Timer_Reg_Write(REG_SIZE_t * const address, uint32_t const val);
+REG_SIZE_t Timer_Reg_Read(REG_SIZE_t * const address);
 
 #endif // TIMER_H
