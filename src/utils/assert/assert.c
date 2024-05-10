@@ -30,12 +30,13 @@ void assertion_failure(char const * const file, uint16_t const linenum) {
     printf("Assert fail at file %s, line %u ", __file, linenum); // move to assert_ind?
 
     Core_Breakpoint();
-#else
+#else // __DEBUG
     // call function that indicates an assertion failure  
     assert_ind();
-    
+#endif // __DEBUG
+
     // halt (or reset?) 
     while(1);  // move to assert_int?
-#endif
+
 } 
-#endif
+#endif // NO_ASSERTIONS
