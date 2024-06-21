@@ -17,17 +17,15 @@ typedef enum {
     QUEUE_OVERRUN_MODE_MAX
 } queue_overrun_mode_t;
 
-typedef struct {
-    queue_elem_t* buffer;
-    size_t size;
-    queue_elem_t default_value;
-    queue_overrun_mode_t overrun_mode;
-} queue_init_t;
-
 typedef struct queue_ctx const * const queue_t;
 
+typedef struct {
+    queue_elem_t default_value;
+    queue_overrun_mode_t overrun_mode;
+} queue_config_t;
+
 queue_t Queue_Create(size_t len);
-error_t Queue_Init(queue_t queue, queue_init_t const * const config);
+error_t Queue_Init(queue_t queue, queue_config_t const * const config);
 void Queue_Flush(queue_t queue);
 // size_t queue_capacity_get(queue_t queue);
 // size_t queue_used_qty_get(queue_t queue);
