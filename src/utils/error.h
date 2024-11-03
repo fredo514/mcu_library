@@ -24,6 +24,7 @@ typedef enum
     ERROR_UNINITIALIZED,        // Instance not configured     
     ERROR_ALREADY_INITIALIZED,  // Instance already configured  
     ERROR_OVERRUN,               // Buffer overflow.
+    ERROR_OUT_OF_RANGE,
     ERROR_MAX                      
 } ERROR_CODE_t; 
 
