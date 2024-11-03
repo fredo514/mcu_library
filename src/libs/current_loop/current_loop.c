@@ -41,6 +41,7 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
     float current_ma = (float)reading_v / (loop->shunt_resistor_value_ohms * 1000);
 
     if ((current_ma < 4.0f) || (current_ma > 20.0f)) {
+        loop->status = CURRENT_LOOP_STATUS_FAULT;
         return ERROR_OUT_OF_RANGE;
     }
 
