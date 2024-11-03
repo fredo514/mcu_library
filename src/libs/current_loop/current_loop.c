@@ -39,6 +39,8 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
         return ERROR_BUSY;
     }
 
+    loop->status = CURRENT_LOOP_STATUS_BUSY;
+
     float reading_v = loop->read_v();
     float current_ma = reading_v / (loop->shunt_resistor_value_ohms * 1000);
 
@@ -49,6 +51,8 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
 
     *reading_percent = loop->min_physical + ((current_ma - 4.0f) / (20.0f - 4.0f)) * (loop->max_physical - loop->min_physical);;
     loop->last_reading = reading_percent;
+
+    loop->status = CURRENT_LOOP_STATUS_IDLE;
 
     return SUCCESS;
 }
