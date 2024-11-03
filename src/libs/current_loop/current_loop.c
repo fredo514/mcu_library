@@ -49,7 +49,7 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
         return ERROR_OUT_OF_RANGE;
     }
 
-    *reading_percent = loop->min_physical + ((current_ma - 4.0f) / (20.0f - 4.0f)) * (loop->max_physical - loop->min_physical);;
+    *reading_percent = loop->min_physical + (((current_ma - 4.0f) / (20.0f - 4.0f)) * (loop->max_physical - loop->min_physical));
     loop->last_reading = reading_percent;
 
     loop->status = CURRENT_LOOP_STATUS_IDLE;
