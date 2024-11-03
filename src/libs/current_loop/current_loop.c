@@ -20,6 +20,8 @@ CURRENT_LOOP_h CurrentLoop_Create(void) {
 ERROR_CODE_t CurrentLoop_Init(CURRENT_LOOP_h loop, CURRENT_LOOP_CONFIG_t const* const config) {
     ASSERT(loop);
     ASSERT(config);
+    ASSERT(config->read_v);
+    ASSERT(config->shunt_resistor_value_ohms > 0);
 
     loop->read_v = config->read_v;
     loop->shunt_resistor_value_ohms = config->shunt_resistor_value_ohms;
@@ -37,8 +39,8 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
         return ERROR_BUSY;
     }
 
-    uint32_t raw_reading = loop->read_v();
-    float current_ma = (float)reading_v / (loop->shunt_resistor_value_ohms * 1000);
+    float reading_v = loop->read_v();
+    float current_ma = reading_v / (loop->shunt_resistor_value_ohms * 1000);
 
     if ((current_ma < 4.0f) || (current_ma > 20.0f)) {
         loop->status = CURRENT_LOOP_STATUS_FAULT;
