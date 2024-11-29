@@ -65,6 +65,7 @@ ERROR_CODE_t Uart_Callback_Register(UART_h uart, UART_CALLBACK_t const function,
 ERROR_CODE_t Uart_Enable(UART_h uart);
 ERROR_CODE_t Uart_Disable(UART_h uart);
 ERROR_STATUS_t Uart_Status_Get(UART_h uart);
+IRQn_Type Uart_Irqn_Get(UART_h uart);
 
 ERROR_CODE_t Uart_Char_Put(UART_h uart, uint8_t const ch);
 ERROR_CODE_t Uart_Buffer_Put(UART_h uart, uint8_t const * const buf, uint8_t len);
