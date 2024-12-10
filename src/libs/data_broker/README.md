@@ -16,9 +16,11 @@ optional read-modify-write operations (e.g. increment(step) on uint32_t)
 
 Integrate with CLI
 * ls (list all data models) 
-* read <model> (print model struct) 
+* read <modelname> (print model struct) 
 * write {name:"<modelname>", <modelmember:value>} (write to a model member) 
 * touch <model> (trigger change notification) 
+
+Use something like FNV hash of model name for indexing
 
 serialize to/from json (e.g. CLI commands)
 serialize to/from binary to read/write to/from persistent memory
