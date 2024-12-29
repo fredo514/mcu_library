@@ -7,7 +7,7 @@
 
 // Redefine the __FILE__ macro so it contains just the file name and no path
 // Add -Wno-builtin-macro-redefined to the compiler options to suppress the warning about this.
-#define __FILE__ (__builtin_strrchr("/"__BASE_FILE__, '/') + 1)
+// #define __FILE__ (__builtin_strrchr("/"__BASE_FILE__, '/') + 1)
 
 // macro to give files a unique ID
 // // use in each .c file
@@ -33,7 +33,8 @@ void assertion_failure(char const * const file, uint16_t const linenum);
 void assertion_failure_log(ASSERT_INFO_t const * const info);
  
 // #define ASSERT(expr) ((expr) ? (void)0 : assertion_failure((uint8_t)F_NUM, (uint16_t)__LINE__))
-#define ASSERT(expr) ((expr) ? (void)0 : assertion_failure(__FILE__, (uint16_t)__LINE__))
+// #define ASSERT(expr) ((expr) ? (void)0 : assertion_failure(__FILE__, (uint16_t)__LINE__))
+#define ASSERT(expr) ((expr) ? (void)0 : assertion_failure(__FILE_NAME__, (uint16_t)__LINE__))
 
 #ifndef NO_DEBUG 
 #define ASSERT_DEBUG(expr) ASSERT(expr)
