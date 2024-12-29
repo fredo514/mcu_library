@@ -25,11 +25,18 @@ typedef struct {
   ERROR_CODE_t const error_code;
 } ASSERT_INFO_t;
 
+typedef enum {
+  ASSERT_SEVERITY_MINOR,
+  ASSERT_SEVERITY_MODERATE,
+  ASSERT_SEVERITY_CRITICAL,
+  ASSERT_SEVERITY_MAX
+} ASSERT_SEVERITY_t;
+
 void assert_init(void (*callback)(void)); 
 
 #ifndef NO_ASSERTIONS
 // void assertion_failure(uint8_t file, uint16_t linenum);
-void assertion_failure(char const * const file, uint16_t const linenum);
+void assertion_failure(char const * const file, uint16_t const linenum, ASSERT_SEVERITY_t severity);
 void assertion_failure_log(ASSERT_INFO_t const * const info);
  
 // #define ASSERT(expr) ((expr) ? (void)0 : assertion_failure((uint8_t)F_NUM, (uint16_t)__LINE__))
