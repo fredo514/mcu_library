@@ -1,0 +1,1 @@
+It is acceptable for application specific modules to use hard-coded model point names.
