@@ -37,7 +37,24 @@
 // warning about this.
 #define __FILE__ (__builtin_strrchr("/"__BASE_FILE__, '/') + 1)
 
-// Number of elements in the given array
-#define ARRAY_SIZE(array) (sizeof(array)/sizeof((array)[0]))
+/**
+ * @brief Macro for getting the number of elements in an array.
+ *
+ * @param[in] array Name of the array.
+ *
+ * @return Array element count.
+ */
+#define ARRAY_SIZE(array) (sizeof(array) / sizeof((array)[0]))
+
+/**
+ * @brief Macro for getting the offset (in bytes) from the beginning of a structure
+ *        of the specified type to its specified member.
+ *
+ * @param[in] type   Structure type.
+ * @param[in] member Structure member whose offset is searched for.
+ *
+ * @return Member offset in bytes.
+ */
+#define OFFSETOF(type, member)  ((size_t)&(((type *)0)->member))
 
 #endif // MACROS_H
