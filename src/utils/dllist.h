@@ -5,6 +5,7 @@
 struct _dnode {
         struct _dnode *previous;
         struct _dnode *next;
+        void* content;
 };
 typedef struct _dnode dlnode_t;
  
