@@ -20,4 +20,4 @@ error_t sllist_insert_after(slnode_t * const node, slnode_t * const new_node);
 error_t sllist_prepend(sllist_t const * const list, slnode_t * const new_node);
 error_t sllist_append(sllist_t const * const list, slnode_t * const new_node);
 
-error_t sllist_remove(slnode_t * const node);
+error_t sllist_remove(sllist_t * const list, size_t position);
