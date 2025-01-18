@@ -14,9 +14,9 @@ uint16_t koopman16(uint16_t const* data, size_t len);
 uint16_t koopman16p(uint16_t const* data, size_t len);
 
 // for 32bit data
-// HD3 up to len=134217720, then HD2
+// HD3 up to len=134217720(typo???), then HD2
 uint32_t koopman32(uint32_t const* data, size_t len);
 // HD4 up to len=134217720, then HD2
-uint32_t koopman32(uint32_t const* data, size_t len);
+uint32_t koopman32p(uint32_t const* data, size_t len);
 
 #endif
