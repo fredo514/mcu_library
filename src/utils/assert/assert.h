@@ -15,6 +15,14 @@
 //     enum { F_NUM=num }; \
 //     void _dummy##num(void) {}
 
+
+// TODO: if init called without callback, initialize to default breakpoint+loop
+// TODO: have real-time handler that
+//  - turn led on
+//  - save coredump to log (e.g. ram ring buffer with background task that flushes it to non-volatile)
+//  - throw highest level fault for app to go to safe state
+//  - consider having severity levels with different response (e.g. critical, moderate, minor)
+
 // Convenience structure to store debug info.
 typedef struct {
   REG_SIZE_t const pc;
