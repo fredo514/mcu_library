@@ -7,7 +7,7 @@ typedef void (*error_reboot_callback_t)(const ERROR_CTX_t* error_ctx); // applic
 /* @brief Enumerated type for error codes. */ 
 typedef enum  
 {   
-    NO_ERROR = 0,                // Operation performed successfully. 
+    NO_ERROR = 0,               // Operation performed successfully. 
     SUCCESS = 0,                // Operation performed successfully. 
     ERROR_NO_PERM,              // Operation not permitted 
     ERROR_NO_DEV,               // No such device or address 
@@ -23,7 +23,8 @@ typedef enum
     ERROR_FORBIDDEN,            // Operation not allowed in this state. 
     ERROR_UNINITIALIZED,        // Instance not configured     
     ERROR_ALREADY_INITIALIZED,  // Instance already configured  
-    ERROR_OVERRUN,               // Buffer overflow.
+    ERROR_OVERRUN,              // Buffer overflow
+    ERROR_NO_DATA,
     ERROR_OUT_OF_RANGE,
     ERROR_MAX                      
 } ERROR_CODE_t; 

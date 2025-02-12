@@ -2,26 +2,32 @@
 
 #include "assert.h"
 
-static size_t next_index(queue_t queue, size_t dex);
-
 struct queue_ctx {
-    queue_elem_t* buffer;
+    void * buffer;
     size_t capacity;
+    size_t elem_size;
     size_t index;
     size_t outdex;
     bool keep_new;
-    queue_elem_t default_value;
 };
 
-error_t queue_init(queue_ctx_t * const queue, queue_init_t const * const config) {
+static size_t Next_Index(queue_h queue, size_t dex);
+
+queue_h Queue_Create(size_t len, size_t item_size) {
+    struct queue_ctx * queue_h inst = calloc(1, sizeof(queue_h));
+    inst->buffer = calloc(len, item_size);
+    inst->capacity = len;
+    inst->elem_size = item_size;
+
+    return inst;
+}
+
+error_t Queue_Init(queue_h queue, queue_init_t const * const config) {
     ASSERT(queue);
     ASSERT(config);
     ASSERT(config->overrun_mode < QUEUE_OVERRUN_MODE_MAX);
 
-    queue->buffer = config->buffer;
-    queue->capacity = config->size;
-
-    queue_flush(queue);
+    Queue_Flush(queue);
 
     switch (config->overrun_mode) {
         case QUEUE_OVERRUN_DROP_OLD:
@@ -37,34 +43,33 @@ error_t queue_init(queue_ctx_t * const queue, queue_init_t const * const config)
             ASSERT(false);
     }
 
-    queue->default_value = config->default_value;
-
     return SUCCESS;
 }
 
-bool queue_is_full(queue_ctx_t const * const queue) {
+bool Queue_Is_Full(queue_h queue) {
     ASSERT(queue);
 
     // keeping a free slot for this check allows concurency of 1 producer and many consumers
     // TODO: use full flag and mutex instead?
-    size_t next_in = next_index(queue, queue->index);
+    size_t next_in = Next_Index(queue, queue->index);
 
     return (next_in == queue->outdex);
 }
 
-bool queue_is_empty(queue_ctx_t const * const queue) {
+bool Queue_Is_Empty(queue_h queue) {
     ASSERT(queue);
 
     return (queue->index == queue->outdex);
 }
 
-error_t queue_push(queue_ctx_t * const queue, queue_elem_t val) {
+error_t Queue_Push(queue_h queue, void const * const src_item) {
     ASSERT(queue);
+    ASSERT(src_item);
 
-    if (queue_is_full(queue)) {
+    if (Queue_Is_Full(queue)) {
         if (queue->keep_new) {
             // drop oldest
-            queue->outdex = next_index(queue, queue->outdex);
+            queue->outdex = Next_Index(queue, queue->outdex);
         }
         else {
             // full and set to not drop oldest
@@ -72,32 +77,34 @@ error_t queue_push(queue_ctx_t * const queue, queue_elem_t val) {
         }
     }
 
-    queue->buffer[queue->index] = val;
-    queue->index = next_index(queue, queue->index);
+    memcpy((uint8_t *)queue->buffer + (queue->index * queue->elem_size), item, queue->elem_size);
+    queue->index = Next_Index(queue, queue->index);
     
     return SUCCESS;
 }
 
-queue_elem_t queue_pop(queue_ctx_t * const queue) {
+error_t queue_pop(queue_h queue, void * const dest_item) {
     ASSERT(queue);
+    ASSERT(dest_item);
     
     if (queue_is_empty(queue)) {
-        return queue->default_value;
+        memset((uint8_t *)dest_item, 0, queue->elem_size);
+        
+        return ERROR_NO_DATA;
     }
-    
-    queue_elem_t val = queue->buffer[queue->outdex];
+
+    memcpy(dest_item, (uint8_t *)queue->buffer + (queue->outdex * queue->elem_size), queue->elem_size);
     queue->outdex = next_index(queue, queue->outdex);
     
-    return val;
-    
+    return SUCCESS;
 }
 
-void queue_flush(queue_ctx_t * const queue) {
+void queue_flush(queue_h queue) {
     queue->index = 0;
     queue->outdex = 0;
 }
 
-static size_t next_index(queue_ctx_t const * const queue, size_t dex) {
+static size_t next_index(queue_h queue, size_t dex) {
     dex++;
 
     if (dex >= queue->capacity) {
