@@ -2,7 +2,7 @@
 #define PT_UINT32_H
 
 #include "error.h"
-#include "modelpoint_base.h"
+#include "pt_base.h"
 
 typedef struct
 {
