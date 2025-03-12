@@ -25,9 +25,9 @@ ERROR_CODE_t Gpio_Callback_Register(GPIO_h gpio, GPIO_CALLBACK_t const function,
 ERROR_CODE_t Gpio_Mode_Set(GPIO_h gpio, GPIO_MODE_t const mode);
 
 GPIO_STATE_t Gpio_Read(GPIO_h gpio);
-ERROR_CODE_t Gpio_Set(GPIO_h gpio, GPIO_STATE_t const state);
-// ERROR_CODE Gpio_Set_Low(GPIO_h gpio);
-// ERROR_CODE Gpio_Set_High(GPIO_h gpio);
+ERROR_CODE_t Gpio_Write(GPIO_h gpio, GPIO_STATE_t const state);
+// ERROR_CODE Gpio_Write_Low(GPIO_h gpio);
+// ERROR_CODE Gpio_Write_High(GPIO_h gpio);
 ERROR_CODE_t Gpio_Toggle(GPIO_h gpio);
 
 // bool Gpio_Is_Set_High(GPIO_h gpio);  // for output

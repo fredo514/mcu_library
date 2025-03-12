@@ -52,6 +52,6 @@ HSM_h Hsm_Create(void);
 ERROR_CODE_t Hsm_Init(HSM_h sm, HSM_STATE_t const * const state_map); 
 
 bool Hsm_Dispatch(HSM_h sm, HSM_EVT_t * event); 
-HSM_STATE_t Hsm_State_Get(HSM_h sm)
+HSM_STATE_t Hsm_State_Get(HSM_h sm);
 
 #endif // HSM_H
