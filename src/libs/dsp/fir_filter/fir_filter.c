@@ -23,7 +23,7 @@ ERROR_CODE_t Fir_Filt_Init(FIR_h filt, FIR_DATA_t * coeffs) {
     filt->index = 0;
     filt->out = 0;
 
-    for (int i=0; i<filt->order; ++i) {
+    for (size_t i=0; i<filt->order; ++i) {
         filt->coeff[i] = coeffs[i];
         filt->input[i] = 0;
     }
@@ -42,7 +42,7 @@ FIR_DATA_t Fir_Filt_Form1_Update(FIR_h filt, FIR_DATA_t input) {
 
     Uint8_t sum_index = filt->index; 
 
-    for (int i=0; i < filt->order; ++i) { 
+    for (size_t i=0; i < filt->order; ++i) { 
         if (sum_index > 0) { 
             sum_index--; 
         } else { 

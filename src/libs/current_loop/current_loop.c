@@ -2,7 +2,7 @@
 #include "assert.h"
 
 struct CURRENT_LOOP_CTX {
-    CURRENT_LOOP_STATUS_t status;
+    CURRENT_LOOP_STATE_t state;
     uint32_t (*read_v)(void);
     float shunt_resistor_value_ohms;     ///< Precision resistor value for 4-20mA (e.g., 250Ω)
     float min_physical;
@@ -12,7 +12,7 @@ struct CURRENT_LOOP_CTX {
 
 CURRENT_LOOP_h CurrentLoop_Create(void) {
     struct CURRENT_LOOP_CTX* loop = calloc(1, sizeof(struct CURRENT_LOOP_CTX));
-    loop->status = CURRENT_LOOP_STATUS_RESET;
+    loop->state = CURRENT_LOOP_STATE_RESET;
 
     return loop;
 }
@@ -33,9 +33,9 @@ ERROR_CODE_t CurrentLoop_Init(CURRENT_LOOP_h loop, CURRENT_LOOP_CONFIG_t const* 
 
 ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
     ASSERT(loop);
-    ASSERT(loop->status != CURRENT_LOOP_STATUS_RESET);
+    ASSERT(loop->status != CURRENT_LOOP_STATE_RESET);
 
-    if (CURRENT_LOOP_STATUS_BUSY == loop->status) {
+    if (CURRENT_LOOP_STATE_BUSY == loop->status) {
         return ERROR_BUSY;
     }
 
@@ -45,7 +45,7 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
     float current_ma = reading_v / (loop->shunt_resistor_value_ohms * 1000);
 
     if ((current_ma < 4.0f) || (current_ma > 20.0f)) {
-        loop->status = CURRENT_LOOP_STATUS_FAULT;
+        loop->status = CURRENT_LOOP_STATE_FAULT;
         return ERROR_OUT_OF_RANGE;
     }
 
@@ -57,13 +57,13 @@ ERROR_CODE_t CurrentLoop_Read(CURRENT_LOOP_h loop, float* reading_percent) {
     return SUCCESS;
 }
 
-CURRENT_LOOP_STATUS_t CurrentLoop_GetStatus(CURRENT_LOOP_h loop) {
+CURRENT_LOOP_STATE_t CurrentLoop_State_Get(CURRENT_LOOP_h loop) {
     ASSERT(loop);
 
     return loop->status;
 }
 
-float CurrentLoop_GetLastReading(CURRENT_LOOP_h loop) {
+float CurrentLoop_LastReading_Get(CURRENT_LOOP_h loop) {
     ASSERT(loop);
 
     return loop->last_reading;
