@@ -100,10 +100,10 @@ ERROR_CODE_t I2c_Init(I2C_h i2c, I2C_CONFIG_t const * const config);
 ERROR_CODE_t I2c_Callback_Register(I2C_h i2c, I2C_CALLBACK_ID_t const callback_id, void * cb);
 I2C_STATE_t I2c_State_Get(I2C_h i2c);
 uint8_t I2c_Receive_Count_Get(I2C_h i2c);
-I2C_STATUS_t I2c_Buffer_Attach(I2C_h i2c, uint8_t const * const buffer_ptr, uint16_t len);
+I2C_STATUS_t I2c_Buffer_Attach(I2C_h i2c, uint8_t const * const buffer_ptr, size_t len);
 
-ERROR_CODE_t I2c_Master_Write(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options);
-ERROR_CODE_t I2c_Master_Read(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, uint16_t len, I2C_XFER_OPTIONS_t options);
+ERROR_CODE_t I2c_Master_Write(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, size_t len, I2C_XFER_OPTIONS_t options);
+ERROR_CODE_t I2c_Master_Read(I2C_h i2c, uint16_t address, uint8_t const * const buffer_ptr, size_t len, I2C_XFER_OPTIONS_t options);
 ERROR_CODE_t I2c_Master_Abort(I2C_h i2c);
 ERROR_CODE_t I2c_Slave_Enable(I2C_h i2c);
 ERROR_CODE_t I2c_Slave_Disable(I2C_h i2c);

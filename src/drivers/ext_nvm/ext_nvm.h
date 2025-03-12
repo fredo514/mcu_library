@@ -20,10 +20,10 @@ ERROR_CODE_t Ext_Nvm_Init(EXT_EE_CONFIG_t const * const config);
 
 ERROR_CODE_t Ext_Nvm_Write_Enable(void);
 ERROR_CODE_t Ext_Nvm_Write_Disable(void);
-ERROR_CODE_t Ext_Nvm_Erase(size_t const address);
+ERROR_CODE_t Ext_Nvm_Erase(uint32_t const address);
 
-ERROR_CODE_t Ext_Nvm_Buf_Write(size_t const address, void const * const src, size_t const len);
-ERROR_CODE_t Ext_Nvm_Buf_Read(size_t const address, void * const dest, uivoidnt8_t const len);
+ERROR_CODE_t Ext_Nvm_Buffer_Write(uint32_t const address, uint8_t const * const src, size_t const len);
+ERROR_CODE_t Ext_Nvm_Buffer_Read(uint32_t const address, uint8_t * const dest, size_t const len);
 
 // Use these SPARINGLY to extend the API
 ERROR_CODE_t Ext_Nvm_Reg_Write (EXT_NVM_REG_t const reg, uint8_t const val);

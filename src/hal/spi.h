@@ -41,7 +41,7 @@ ERROR_CODE_t Spi_Mode_Set(SPI_h spi, SPI_MODE_t const mode);
 SPI_STATUS_t Spi_Status_Get(SPI_h spi);
 
 uint8_t Spi_ReadWrite(SPI_h spi, uint8_t const tx_data);
-ERROR_CODE_t Spi_Buffer_ReadWrite(SPI_h spi, uint8_t const * const tx_buf, uint8_t const * const rx_buf, uint8_t len);
+ERROR_CODE_t Spi_Buffer_ReadWrite(SPI_h spi, uint8_t const * const tx_buf, uint8_t const * const rx_buf, size_t len);
 
 // Use these SPARINGLY to extend the API
 ERROR_CODE_t Spi_Reg_Write(REG_SIZE_t * const address, uint32_t const val);

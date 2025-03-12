@@ -31,12 +31,12 @@ bool Flash_Is_Busy(void);
 ERROR_CODE_t Nvm_Unlock(void);
 ERROR_CODE_t Nvm_Lock(void);
 
-ERROR_CODE_t Nvm_Word_Write(uint32_t* const address, REG_SIZE_t const data);
-ERROR_CODE_t Nvm_Buffer_Write(uint32_t* const address, REG_SIZE_t const * const data_buf, uint8_t const len);
-REG_SIZE_t Nvm_Word_Read(uint32_t const * const address);
-ERROR_CODE_t Nvm_Buffer_Read(uint32_t const * const address, REG_SIZE_t * const data_buf, uint8_t const len);
+ERROR_CODE_t Nvm_Word_Write(REG_SIZE_t * const address, REG_SIZE_t const data);
+ERROR_CODE_t Nvm_Buffer_Write(REG_SIZE_t* const address, REG_SIZE_t const * const data_buf, size_t const len);
+REG_SIZE_t Nvm_Word_Read(REG_SIZE_t const * const address);
+ERROR_CODE_t Nvm_Buffer_Read(REG_SIZE_t const * const address, REG_SIZE_t * const data_buf, size_t const len);
 
-ERROR_CODE_t Nvm_Sector_Erase(FLASH_SECTOR_t const start_sector, uint8_t const nb_sector);
+ERROR_CODE_t Nvm_Sector_Erase(FLASH_SECTOR_t const start_sector, size_t const nb_sector);
 ERROR_CODE_t Nvm_Erase_All(void);
 
 // Use these SPARINGLY to extend the API
