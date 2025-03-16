@@ -45,8 +45,8 @@ typedef struct {
     HSM_SIG_t sig;
 } HSM_EVT_t;
 
-typedef HSM_STATE_INTERNAL_t HSM_STATE_t;
-typedef HSM_CTX_t const * const HSM_h;
+typedef struct hsm_state_ctx HSM_STATE_t;
+typedef struct HSM_CTX * const HSM_h;
 
 HSM_h Hsm_Create(void);
 ERROR_CODE_t Hsm_Init(HSM_h sm, HSM_STATE_t const * const state_map); 

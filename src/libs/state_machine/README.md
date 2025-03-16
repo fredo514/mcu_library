@@ -1,3 +1,13 @@
+# Properties
+* Hierarchical state nesting
+* Entry/exit action execution on state transition
+* Nested initial transitions
+* Re-entrant event processor
+* Events with arbitrary parameters
+* Tracing support
+
+
+
 The state machine module must be extended for each state machine needed in order to implement the specific events and states map.
 E.g.:
 
