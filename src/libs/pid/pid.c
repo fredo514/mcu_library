@@ -37,17 +37,15 @@ ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     ASSERT(config->kp >= 0);
     ASSERT(config->ki >= 0);
     ASSERT(config->kd >= 0);
-    ASSERT(config->min_output < config->max_output);  
+    ASSERT(config->min_output < config->max_output); 
+    if (config->kd > 0) {
+        ASSERT(config->deriv_filter);
+    }
 
     pid->action = config->action;
-
-    pid->p_gain = config->kp;
-    pid->i_gain = config->ki;
-    pid->d_gain = config->kd;
-    pid->alpha = config->alpha;
-
     pid->mode = config->mode;
-    pid->p_on_m_weight = config->p_on_m_weight;
+
+    Pid_Gain_Set(pid, config->kp, config->ki, config->kd, config->alpha, config->p_on_m_weight);
     
     if (config->error_calc_cb) {
         pid->error_calc_cb = config->error_calc_cb;
@@ -120,29 +118,35 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         output += pid->i_term;
 
         // Calculate derivative term using derivative on measurement to avoid derivative kick
+        pid->last_deriv = pid->deriv_filter(pid->d_gain * input_deriv, pid->last_deriv);
         // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
-        pid->last_deriv = pid->last_deriv + (pid->alpha_deriv * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
+        // pid->last_deriv = pid->last_deriv + (pid->alpha_deriv * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
         // could also use a small FIR filter such as: (TODO, replace with Fir_Filt instance)
         // pid->last_deriv[0] = pid->d_gain * (input_deriv - last_deriv[2] + 3*(last_deriv[0] - last_deriv[1])) / 6;
         // d_term is negative due to using derivative on measurement
-        output -= pid->last_deriv;
+        output_desired -= pid->last_deriv;
 
-        // Clamp to avoid windup and store
+        // Clamp to avoid overflow
         output = Clamp(pid, output);
-        // CO filter
-        output = pid->last_output + ((sampling_period / (pid->alpha_co * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
-        pid->last_output = output;
+        // CO filter, could be rate-limiter, actuator limits, lowpass, etc
+        output_saturated = pid->output_filter(output_desired, pid->last_output);
+        //output = pid->last_output + ((sampling_period / (pid->alpha_co * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
+        pid->last_output = output_saturated;
+        output = output_saturated;
 
         // Update intergral sum at the end for faster response time
         // Store computed term to avoid bump when changing the integral gain
-        // Use bilinear transform for integral to smooth sharp changes (could also be standard, forward difference, backward difference, etc)
+        // Use transform to smooth sharp changes, bilinear is acceptable (could also be standard, forward difference, backward difference, etc)
         pid->i_term += pid->i_gain * (error - pid->last_error) / 2;
-        pid->last_error = error;
-        //pid->i_term += pid->i_gain * error;
         pid->i_term -= p_on_m_term;
-        // Clamp to avoid windup
-        pid->i_term = Clamp(pid, pid->i_term);
-    }    
+        // Anti-windup
+        pid->i_term += pid->kaw * (output_saturated - output_desired);
+
+        pid->last_error = error;
+    } 
+    else {
+        output = pid->last_output;
+    }   
 
     pid->last_input = input;
 

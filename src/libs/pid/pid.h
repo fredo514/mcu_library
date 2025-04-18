@@ -24,7 +24,8 @@ typedef struct {
     PID_DATA_t kp;               ///< Proportional gain
     PID_DATA_t ki;               ///< Integral gain
     PID_DATA_t kd;               ///< Derivative gain
-    PID_DATA_t alpha;            ///< Filter coefficient for derivative term
+    PID_DATA_t alpha_deriv;      ///< Filter coefficient for derivative term
+    PID_DATA_t kaw               ///< Anti-windup gain
     PID_DATA_t max_output;       ///< Maximum output value for saturation
     PID_DATA_t min_output;       ///< Minimum output value for saturation
     PID_ACTION_t action;         ///< Control action (direct or reverse)
