@@ -20,3 +20,25 @@ All the measured variables have to be thoroughly filtered. They should go throug
 PI is sufficient most of the time (Kd=0, a=0).
 PID can sometimes help get marginally better performance when tuning aggressively.
 CO filter is rarely needed. Only potential for benefit in loops with noise and/or delicate mechanical actuators.
+
+## Anti-windup Tuning
+A common and effective starting point is:
+```math
+K_{aw} = \frac{1}{K_{i}\cdot \tau}
+```
+Where:
+* $K_{i}$ is the integral gain,
+* $\tau$ is a time constant, usually selected based on the actuator or system time response (e.g., ~0.1 to 1.0 × the plant’s time constant).
+
+1. Start with $\tau = T$, where $T$ is the controller's sampling time in seconds.
+2. Test (or simulate) the response to a step input causing controller output saturation.
+3. Adjust as needed:
+    * If unwind is too slow → increase $K_{aw}$ (more aggressive correction).
+    * If you get oscillation or instability → decrease $K_{aw}$ (smoother correction).
+
+## Proportional on Measurement Tuning
+Propotionbal on Measurement weigth accepts values between 0 and 1.
+
+Set to 0 for proportional term to react only on error (default, standard PID).
+
+Increase for proportional term to also react to input rate of change (resist change). This is useful for integrating processes. 

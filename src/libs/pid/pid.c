@@ -101,48 +101,58 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         }
 
         // Calculate proportional terms
+        PID_DATA_t p_term = 0;
         if (pid->p_on_m_weight > 0) {
             // In proportional-on-measurement mode, the proportional gain resists change
             p_on_m_term = pid->p_on_m_weight * pid->p_gain * input_deriv;
-            output -= p_on_m_term;
+            p_term -= p_on_m_term;
 
             // should i_term be updated for p_on_m here instead?
         }
         
         if (pid->p_on_m_weight < 1) {
-            // In proportional-on-error mode, the proportional gain reacts to error
-            output += (1 - pid->p_on_m_weight) * pid->p_gain * error;
+            // In proportional-on-error mode, the proportional gain reacts to error (normal mode)
+            p_term += (1 - pid->p_on_m_weight) * pid->p_gain * error;
         }
-        
-        // add in integral sum
-        output += pid->i_term;
 
-        // Calculate derivative term using derivative on measurement to avoid derivative kick
-        pid->last_deriv = pid->deriv_filter(pid->d_gain * input_deriv, pid->last_deriv);
+        // Calculate derivative term 
+        // using derivative on measurement to avoid derivative kick
+        // low-pass filter is NOT optional. It is necessary to prevent output chatter due to input noise.
+        PID_DATA_t d_term = pid->deriv_filter(pid->d_gain * input_deriv, pid->last_d_term);
         // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
         // pid->last_deriv = pid->last_deriv + (pid->alpha_deriv * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
         // could also use a small FIR filter such as: (TODO, replace with Fir_Filt instance)
         // pid->last_deriv[0] = pid->d_gain * (input_deriv - last_deriv[2] + 3*(last_deriv[0] - last_deriv[1])) / 6;
-        // d_term is negative due to using derivative on measurement
-        output_desired -= pid->last_deriv;
 
-        // Clamp to avoid overflow
-        output = Clamp(pid, output);
-        // CO filter, could be rate-limiter, actuator limits, lowpass, etc
-        output_saturated = pid->output_filter(output_desired, pid->last_output);
-        //output = pid->last_output + ((sampling_period / (pid->alpha_co * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
-        pid->last_output = output_saturated;
+        // Calculate integral term
+        PID_DATA_t i_term_clamped = Clamp(pid->i_term, pid->min_output - (p_term + d_term), pid->max_output - (p_term + d_term));
+
+        // Calculate desired output
+        // d_term is negative due to using derivative on measurement
+        PID_DATA_t output_desired = p_term + i_term_clamped - d_term;
+
+        // Clamp to controller limits
+        PID_DATA_t output_saturated = Clamp(output_desired, pid->min_output, pid->max_output);
+        // CO filter
+        // Normally not needed, but could be rate-limiter, actuator limits, lowpass, etc
+        if (pid->output_filter) {
+            output_saturated = pid->output_filter(output_saturated, pid->last_output);
+            //output = pid->last_output + ((sampling_period / (pid->alpha_co * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
+        }
         output = output_saturated;
 
         // Update intergral sum at the end for faster response time
         // Store computed term to avoid bump when changing the integral gain
         // Use transform to smooth sharp changes, bilinear is acceptable (could also be standard, forward difference, backward difference, etc)
         pid->i_term += pid->i_gain * (error - pid->last_error) / 2;
+        // Compensate for proportional on measurement
         pid->i_term -= p_on_m_term;
         // Anti-windup
         pid->i_term += pid->kaw * (output_saturated - output_desired);
 
         pid->last_error = error;
+        pid->last_d_term = d_term;
+        pid->last_output = output_saturated;
     } 
     else {
         output = pid->last_output;

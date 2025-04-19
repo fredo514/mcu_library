@@ -111,6 +111,15 @@ PID_MODE_t PID_GetMode(PID_HANDLE_t pid);
 ERROR_CODE_t PID_SetAction(PID_HANDLE_t pid, PID_ACTION_t action);
 
 /** 
+ * @brief Sets the control output limits for saturation.
+ * @param pid Handle to the PID instance.
+ * @param min_output Minimum allowed control output.
+ * @param max_output Maximum allowed control output.
+ * @return Error code indicating success or failure.
+ */
+ERROR_CODE_t PID_SetOutputLimits(PID_HANDLE_t pid, PID_DATA_t min_output, PID_DATA_t max_output);
+
+/** 
  * @brief Updates the PID output based on the input value.
  * @param pid Handle to the PID instance.
  * @param input Current input value for PID calculation.
