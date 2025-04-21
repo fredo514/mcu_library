@@ -142,14 +142,24 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         output = output_saturated;
 
         // Update intergral sum at the end for faster response time
-        // Store computed term to avoid bump when changing the integral gain
-        // Use transform to smooth sharp changes, bilinear is acceptable (could also be standard, forward difference, backward difference, etc)
-        pid->i_term += pid->i_gain * (error - pid->last_error) / 2;
+        // output is saturated and integral wants to grow
+        if ((output_saturated != output_desired) && ((error ^ output_desired) >= 0)) {
+            // clamp integral
+            integral_error = 0;
+        }
+        else {
+            // Store computed term to avoid bump when changing the integral gain
+            // Use transform to smooth sharp changes, bilinear (tustin) is acceptable (could also be standard, forward difference, backward difference, etc)
+            integral_error = (error + pid->last_error) / 2;
+        }
+
+        pid->i_term += pid->i_gain * integral_error;
         // Compensate for proportional on measurement
         pid->i_term -= p_on_m_term;
         // Anti-windup
         pid->i_term += pid->kaw * (output_saturated - output_desired);
 
+        // save states
         pid->last_error = error;
         pid->last_d_term = d_term;
         pid->last_output = output_saturated;
