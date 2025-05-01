@@ -1,0 +1,23 @@
+name: hal_uart
+version: 1.2.0
+type: hal
+description: Platform-agnostic UART HAL with pluggable platform drivers
+
+supported_platforms:
+  - stm32f4
+  - esp32
+  - nrf52
+
+# ~: starts with
+# >=: at least
+# <: no newer than
+#  : exact match
+dependencies:
+  - name: util_queue
+    version: ">=1.1.0 <2.0.0"
+  - name: util-assert
+    version: "~1.2.0"
+
+requires_callbacks:
+  - uart_on_rx_complete
+  - uart_on_tx_complete
