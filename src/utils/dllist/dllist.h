@@ -1,24 +1,32 @@
-// doubly linked list
+#ifndef DLLIST_H
+#define DLLIST_H
 
-// wrap the node content with a slnode_t into a struct
+#include "error.h"
 
 typedef struct _dnode {
         struct _dnode *previous;
         struct _dnode *next;
+        void * content;
 } dlnode_t;
  
 typedef struct _dlist {
         dlnode_t *head;
-        dlnode_t *tail;
 } dllist_t;
 
 error_t dllist_init(dllist_t * const list);
-error_t dllist_node_init(dlnode_t * const node);
+error_t dllist_node_init(dlnode_t * const node, void const * const content);
 
 bool dllist_is_empty(dllist_t const * const list);
+size_t dllist_num_nodes_get(dllist_t const * const list);
+bool dllist_is_node_in_list(dllist_t const * const list, dlnode_t const * const node);
 
-error_t dllist_insert_after(dlnode_t * const node, dlnode_t * const new_node);
-error_t dllist_prepend(dllist_t const * const list, dlnode_t * const new_node);
-error_t dllist_append(dllist_t const * const list, dlnode_t * const new_node);
+error_t dllist_node_insert_after(dlnode_t * const node, dlnode_t * const new_node);
+error_t dllist_node_insert_before(dlnode_t * const node, dlnode_t * const new_node);
+error_t dllist_node_insert_first(dllist_t const * const list, dlnode_t * const new_node);
+error_t dllist_node_insert_last(dllist_t const * const list, dlnode_t * const new_node);
+error_t dllist_node_remove(dlnode_t * const node);
+dlnode_t dllist_node_previous_get(dlnode_t * const node);
+dlnode_t dllist_node_next_get(dlnode_t * const node);
+void* dllist_node_content_get(dlnode_t * const node);
 
-error_t dllist_remove(dlnode_t * const node);
+#endif // DLLIST_H

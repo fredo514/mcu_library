@@ -4,6 +4,7 @@
 
 typedef struct _snode {
         struct _snode *next;
+        void* content;
 } slnode_t;
  
 typedef struct _slist {
