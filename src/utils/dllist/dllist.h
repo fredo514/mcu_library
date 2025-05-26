@@ -20,6 +20,9 @@ bool dllist_is_empty(dllist_t const * const list);
 size_t dllist_num_nodes_get(dllist_t const * const list);
 bool dllist_is_node_in_list(dllist_t const * const list, dlnode_t const * const node);
 
+dlnode_t dllist_head_get(dllist_t const * const list);
+dlnode_t dllist_tail_get(dllist_t const * const list);
+
 error_t dllist_node_insert_after(dlnode_t * const node, dlnode_t * const new_node);
 error_t dllist_node_insert_before(dlnode_t * const node, dlnode_t * const new_node);
 error_t dllist_node_insert_first(dllist_t const * const list, dlnode_t * const new_node);
