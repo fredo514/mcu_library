@@ -20,6 +20,6 @@ typedef struct
     uint16_t seq_num;
     bool     is_locked;
     dllist_t suscribers;
-} pt_base_t
+} dp_base_t
 
 #endif  // PT_BASE_H

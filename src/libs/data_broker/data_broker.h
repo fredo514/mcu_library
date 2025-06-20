@@ -8,15 +8,14 @@
 #include "error.h"
 
 typedef struct {
-    string name;
-    string info; // e.g. units, range, etc
-    bool valid;
-    string type_id;
+    const char* name;
+    const char* type; // e.g. units, range, etc
+    bool isValid;
     size_t seq_num;
-    bool locked;
+    bool isLocked;
     void* change_cb;
     void* default_value;
-    void* value;
+    void* valuePtr;
 } data_elem_t;
 
 void broker_cb_attach(data_elem_id_t elem, void * cb);
