@@ -1,6 +1,5 @@
 #include "modelpoint.h"
 
-#include <stdio.h>
 #include <string.h>
 
 void Modelpoint_Init(modelpoint_t *const mp, modelpoint_config_t *const pConfig) {
@@ -68,5 +67,9 @@ bool Modelpoint_Get(modelpoint_t const *const mp, void *const pDest) {
 }
 
 uint32_t Modelpoint_UpdateCount_Get(modelpoint_t const *const mp) {
-   return mp->updateCount;
+   Modelpoint_Lock(mp);
+   uint32_t count = mp->updateCount;
+   Modelpoint_Unlock(mp);
+
+   return count;
 }

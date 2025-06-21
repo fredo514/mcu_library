@@ -1,24 +1,25 @@
 #include "dm_registry.h"
 
-#define MODELPOINT(name, type, init)                                                \
-   static modelpoint_t mp_##name;                                                   \
-   static type mp_##name_storage;                                                   \
-   static modelpoint_config_t mp_##name_config = {.name = "##name",                 \
-                                                  .dataPtr = mp_##name_storage,     \
-                                                  .dataSize_bytes = sizeof(##type), \
-                                                  .isValidOnInit = true,            \
-                                                  .initValPtr = &(init)};           \
-   MODELPOINT_LIST
+#define MODELPOINT(mp_name, mp_type, mp_initVal)                                        \
+   static modelpoint_t mp_##mp_name;                                                    \
+   static mp_type mp_storage_##mp_name;                                                 \
+   static modelpoint_config_t mp_config_##mp_name = {.name = #mp_name,                  \
+                                                     .dataPtr = &mp_storage_##mp_name,  \
+                                                     .dataSize_bytes = sizeof(mp_type), \
+                                                     .isValidOnInit = true,             \
+                                                     .initValPtr = &mp_initVal};
+MODELPOINT_LIST
 #undef MODELPOINT
 
 modelpoint_t *dmRegistry_modelpoints[DMREGISTRY_POINTS_MAX_NUM] = {
-#define MODELPOINT(name, type, init) &mp_##name, MODELPOINT_LIST
+#define MODELPOINT(mp_name, mp_type, mp_initVal) &mp_##mp_name,
+    MODELPOINT_LIST
 #undef MODELPOINT
 };
 
 void DmRegistry_Points_InitAll(void) {
-#define MODELPOINT(name, type, init)                                                    \
-   Modelpoint_Init(dmRegistry_modelpoints[DMREGISTRY_POINT_##name], &mp_##name_config); \
+#define MODELPOINT(mp_name, mp_type, mp_initVal) \
+   Modelpoint_Init(dmRegistry_modelpoints[DMREGISTRY_POINT_##mp_name], &mp_config_##mp_name);
    MODELPOINT_LIST
 #undef MODELPOINT
 }

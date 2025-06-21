@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/src/libs/data_model/build/test/out/test_dm_registry/test_dm_registry_runner.o",
+            "program": "${workspaceFolder}/src/libs/data_model/build/test/out/test_dm_registry/test_dm_registry.out",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

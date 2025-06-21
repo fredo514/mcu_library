@@ -8,9 +8,10 @@
 #include "modelpoint.h"
 
 typedef enum {
-#define MODELPOINT(name, type, init) DMREGISTRY_POINT_##name, MODELPOINT_LIST
+#define MODELPOINT(mp_name, mp_type, mp_initVal) DMREGISTRY_POINT_##mp_name,
+   MODELPOINT_LIST
 #undef MODELPOINT
-   DMREGISTRY_POINTS_MAX_NUM,
+       DMREGISTRY_POINTS_MAX_NUM,
 } dmRegistry_mpId_t;
 
 extern modelpoint_t *dmRegistry_modelpoints[DMREGISTRY_POINTS_MAX_NUM];

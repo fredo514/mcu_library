@@ -5,7 +5,8 @@ RUN apt-get update && \
         build-essential \
         git \
         clang-format \
-        && \
+        gdb \
+        && apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 RUN gem install bundler
