@@ -20,12 +20,16 @@ extern void test_GetName_ReturnsName(void);
 extern void test_Set_StoreInProvidedStorage(void);
 extern void test_Set_IncrementUpdateCounter(void);
 extern void test_Set_FailIfLocked(void);
+extern void test_Set_CallsRegsiteredSubscribers(void);
+extern void test_Set_CallsMultipleRegsiteredSubscribers(void);
 extern void test_Get_FailIfNotValid(void);
 extern void test_Get_TakeFromProvidedStorage(void);
 extern void test_Set_Get_CustomType(void);
 extern void test_IsLocked_ReturnLockState(void);
 extern void test_Lock_ReturnLockStateBeforeChange(void);
 extern void test_Unlock_ReturnLockStateBeforeChange(void);
+extern void test_Subscribe_ReturnFalseIfTooMany(void);
+extern void test_Touch_CallsSubscribers(void);
 
 
 /*=======Mock Management=====*/
@@ -107,6 +111,10 @@ static void run_test(UnityTestFunction func, const char* name, UNITY_LINE_TYPE l
       UNITY_PRINT_EOL();
       UnityPrint("  test_Set_FailIfLocked");
       UNITY_PRINT_EOL();
+      UnityPrint("  test_Set_CallsRegsiteredSubscribers");
+      UNITY_PRINT_EOL();
+      UnityPrint("  test_Set_CallsMultipleRegsiteredSubscribers");
+      UNITY_PRINT_EOL();
       UnityPrint("  test_Get_FailIfNotValid");
       UNITY_PRINT_EOL();
       UnityPrint("  test_Get_TakeFromProvidedStorage");
@@ -119,23 +127,31 @@ static void run_test(UnityTestFunction func, const char* name, UNITY_LINE_TYPE l
       UNITY_PRINT_EOL();
       UnityPrint("  test_Unlock_ReturnLockStateBeforeChange");
       UNITY_PRINT_EOL();
+      UnityPrint("  test_Subscribe_ReturnFalseIfTooMany");
+      UNITY_PRINT_EOL();
+      UnityPrint("  test_Touch_CallsSubscribers");
+      UNITY_PRINT_EOL();
       return 0;
     }
     return parse_status;
   }
 #endif
   UnityBegin("test_modelpoint.c");
-  run_test(test_Init_InitialState, "test_Init_InitialState", 53);
-  run_test(test_GetName_ReturnsName, "test_GetName_ReturnsName", 69);
-  run_test(test_Set_StoreInProvidedStorage, "test_Set_StoreInProvidedStorage", 73);
-  run_test(test_Set_IncrementUpdateCounter, "test_Set_IncrementUpdateCounter", 80);
-  run_test(test_Set_FailIfLocked, "test_Set_FailIfLocked", 86);
-  run_test(test_Get_FailIfNotValid, "test_Get_FailIfNotValid", 100);
-  run_test(test_Get_TakeFromProvidedStorage, "test_Get_TakeFromProvidedStorage", 110);
-  run_test(test_Set_Get_CustomType, "test_Set_Get_CustomType", 118);
-  run_test(test_IsLocked_ReturnLockState, "test_IsLocked_ReturnLockState", 130);
-  run_test(test_Lock_ReturnLockStateBeforeChange, "test_Lock_ReturnLockStateBeforeChange", 141);
-  run_test(test_Unlock_ReturnLockStateBeforeChange, "test_Unlock_ReturnLockStateBeforeChange", 149);
+  run_test(test_Init_InitialState, "test_Init_InitialState", 71);
+  run_test(test_GetName_ReturnsName, "test_GetName_ReturnsName", 90);
+  run_test(test_Set_StoreInProvidedStorage, "test_Set_StoreInProvidedStorage", 94);
+  run_test(test_Set_IncrementUpdateCounter, "test_Set_IncrementUpdateCounter", 101);
+  run_test(test_Set_FailIfLocked, "test_Set_FailIfLocked", 107);
+  run_test(test_Set_CallsRegsiteredSubscribers, "test_Set_CallsRegsiteredSubscribers", 121);
+  run_test(test_Set_CallsMultipleRegsiteredSubscribers, "test_Set_CallsMultipleRegsiteredSubscribers", 130);
+  run_test(test_Get_FailIfNotValid, "test_Get_FailIfNotValid", 140);
+  run_test(test_Get_TakeFromProvidedStorage, "test_Get_TakeFromProvidedStorage", 150);
+  run_test(test_Set_Get_CustomType, "test_Set_Get_CustomType", 158);
+  run_test(test_IsLocked_ReturnLockState, "test_IsLocked_ReturnLockState", 170);
+  run_test(test_Lock_ReturnLockStateBeforeChange, "test_Lock_ReturnLockStateBeforeChange", 181);
+  run_test(test_Unlock_ReturnLockStateBeforeChange, "test_Unlock_ReturnLockStateBeforeChange", 189);
+  run_test(test_Subscribe_ReturnFalseIfTooMany, "test_Subscribe_ReturnFalseIfTooMany", 198);
+  run_test(test_Touch_CallsSubscribers, "test_Touch_CallsSubscribers", 208);
 
   return UNITY_END();
 }

@@ -26,12 +26,20 @@ typedef struct {
    banana_peel_t peel;
 } banana_t;
 
+static void ChangeCb(void);
+static void AnotherChangeCb(void);
+
 static modelpoint_t mp2;
 static banana_t mp2_storage;
 static modelpoint_config_t mp2_config = {
     .name = "bananaModelPoint", .dataPtr = &mp2_storage, .dataSize_bytes = sizeof(banana_t), .isValidOnInit = false};
+static bool isChangeCalled;
+static bool isAnotherChangeCalled;
 
 void setUp(void) {
+   isChangeCalled = false;
+   isAnotherChangeCalled = false;
+
    Modelpoint_Init(&mp1, &mp1_config);
 
    // set a bunch of time to increment the update counter
@@ -39,6 +47,8 @@ void setUp(void) {
    Modelpoint_Set(&mp1, &dummyValue);
    Modelpoint_Set(&mp1, &dummyValue);
    Modelpoint_Set(&mp1, &dummyValue);
+
+   Modelpoint_Subscribe(&mp1, &ChangeCb);
 
    memset(&mp1_storage, -1, sizeof(mp1_storage));
    Modelpoint_Init(&mp1, &mp1_config);
@@ -50,6 +60,14 @@ void setUp(void) {
 void tearDown(void) {
 }
 
+static void ChangeCb(void) {
+   isChangeCalled = true;
+}
+
+static void AnotherChangeCb(void) {
+   isAnotherChangeCalled = true;
+}
+
 void test_Init_InitialState(void) {
    // valid on init modelpoint
    TEST_ASSERT_EQUAL_STRING(mp1_config.name, Modelpoint_Name_Get(&mp1));
@@ -59,6 +77,9 @@ void test_Init_InitialState(void) {
    uint32_t mp1Val = 0;
    Modelpoint_Get(&mp1, &mp1Val);
    TEST_ASSERT_EQUAL_UINT32(5, mp1Val);
+
+   Modelpoint_Set(&mp1, &mp1Val);
+   TEST_ASSERT_FALSE(isChangeCalled);
 
    // invalid on init modelpoint
    TEST_ASSERT_FALSE(Modelpoint_IsValid(&mp2));
@@ -95,6 +116,25 @@ void test_Set_FailIfLocked(void) {
 
    TEST_ASSERT_EQUAL_UINT32(42, mp1_storage);
    TEST_ASSERT_TRUE(result);
+}
+
+void test_Set_CallsRegsiteredSubscribers(void) {
+   bool result = Modelpoint_Subscribe(&mp1, &ChangeCb);
+   TEST_ASSERT_TRUE(result);
+
+   Modelpoint_Set(&mp1, &(uint32_t){42});
+
+   TEST_ASSERT_TRUE(isChangeCalled);
+}
+
+void test_Set_CallsMultipleRegsiteredSubscribers(void) {
+   Modelpoint_Subscribe(&mp1, &ChangeCb);
+   Modelpoint_Subscribe(&mp1, &AnotherChangeCb);
+
+   Modelpoint_Set(&mp1, &(uint32_t){42});
+
+   TEST_ASSERT_TRUE(isChangeCalled);
+   TEST_ASSERT_TRUE(isAnotherChangeCalled);
 }
 
 void test_Get_FailIfNotValid(void) {
@@ -153,4 +193,21 @@ void test_Unlock_ReturnLockStateBeforeChange(void) {
 
    result = Modelpoint_Unlock(&mp1);
    TEST_ASSERT_FALSE(result);
+}
+
+void test_Subscribe_ReturnFalseIfTooMany(void) {
+   for (size_t i = 0; i < MP_MAX_SUBSCRIBERS; ++i) {
+      bool result = Modelpoint_Subscribe(&mp1, &ChangeCb);
+      TEST_ASSERT_TRUE(result);
+   }
+
+   bool result = Modelpoint_Subscribe(&mp1, &ChangeCb);
+   TEST_ASSERT_FALSE(result);
+}
+
+void test_Touch_CallsSubscribers(void) {
+   Modelpoint_Subscribe(&mp1, &ChangeCb);
+   Modelpoint_Touch(&mp1);
+
+   TEST_ASSERT_TRUE(isChangeCalled);
 }

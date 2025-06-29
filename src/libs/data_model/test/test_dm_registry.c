@@ -12,7 +12,7 @@ void setUp(void) {
 void tearDown(void) {
 }
 
-void test_start_here(void) {
+void test_PointsFromConfigAreRegistered(void) {
    TEST_ASSERT_EQUAL_STRING("BATH_TEMPERATURE",
                             Modelpoint_Name_Get(dmRegistry_modelpoints[DMREGISTRY_POINT_BATH_TEMPERATURE]));
 }

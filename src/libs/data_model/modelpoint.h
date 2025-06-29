@@ -5,22 +5,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define MP_MAX_SUBSCRIBERS 32
+#define MP_MAX_SUBSCRIBERS 16
 
 typedef enum { MP_STATE_NOSUBS, MP_STATE_IDLE, MP_STATE_PENDING, MP_STATE_MAX } mp_state_t;
 
-typedef void (*mp_subscriberCb)(void);
+typedef void (*mp_subscriberCb_t)(void);
 
 typedef struct {
-   //    DataPointTypeId typeId;
    char const *name;
    void *pData;
    size_t dataSize;
    bool isValid;
    bool isLocked;
    uint32_t updateCount;
-   //    mp_subscriberCb subscribers[MP_MAX_SUBSCRIBERS];
-   //    uint8_t subCount;
+   mp_subscriberCb_t subscribers[MP_MAX_SUBSCRIBERS];
+   uint8_t subCount;
 } modelpoint_t;
 
 typedef struct {
@@ -42,9 +41,9 @@ bool Modelpoint_Unlock(modelpoint_t *const mp);
 
 bool Modelpoint_IsValid(modelpoint_t const *const mp);
 
-// Modelpoint_Subscribe()
+bool Modelpoint_Subscribe(modelpoint_t *const mp, mp_subscriberCb_t const cb);
 // Modelpoint_Unsubscribe()
-// Modelpoint_Touch()
+void Modelpoint_Touch(modelpoint_t const *const mp);
 // Modelpoint_CopyFrom()
 
 bool Modelpoint_Set(modelpoint_t *const mp, void const *const pNewValue);

@@ -5,55 +5,71 @@
   :basename: test_modelpoint.c
 :successes:
 - :test: test_Init_InitialState
-  :line: 53
+  :line: 71
   :message: ''
   :unity_test_time: 0
 - :test: test_GetName_ReturnsName
-  :line: 69
+  :line: 90
   :message: ''
   :unity_test_time: 0
 - :test: test_Set_StoreInProvidedStorage
-  :line: 73
+  :line: 94
   :message: ''
   :unity_test_time: 0
 - :test: test_Set_IncrementUpdateCounter
-  :line: 80
+  :line: 101
   :message: ''
   :unity_test_time: 0
 - :test: test_Set_FailIfLocked
-  :line: 86
+  :line: 107
   :message: ''
   :unity_test_time: 0
-- :test: test_Get_FailIfNotValid
-  :line: 100
+- :test: test_Set_CallsRegsiteredSubscribers
+  :line: 121
   :message: ''
   :unity_test_time: 0
-- :test: test_Get_TakeFromProvidedStorage
-  :line: 110
-  :message: ''
-  :unity_test_time: 0
-- :test: test_Set_Get_CustomType
-  :line: 118
-  :message: ''
-  :unity_test_time: 0
-- :test: test_IsLocked_ReturnLockState
+- :test: test_Set_CallsMultipleRegsiteredSubscribers
   :line: 130
   :message: ''
   :unity_test_time: 0
+- :test: test_Get_FailIfNotValid
+  :line: 140
+  :message: ''
+  :unity_test_time: 0
+- :test: test_Get_TakeFromProvidedStorage
+  :line: 150
+  :message: ''
+  :unity_test_time: 0
+- :test: test_Set_Get_CustomType
+  :line: 158
+  :message: ''
+  :unity_test_time: 0
+- :test: test_IsLocked_ReturnLockState
+  :line: 170
+  :message: ''
+  :unity_test_time: 0
 - :test: test_Lock_ReturnLockStateBeforeChange
-  :line: 141
+  :line: 181
   :message: ''
   :unity_test_time: 0
 - :test: test_Unlock_ReturnLockStateBeforeChange
-  :line: 149
+  :line: 189
+  :message: ''
+  :unity_test_time: 0
+- :test: test_Subscribe_ReturnFalseIfTooMany
+  :line: 198
+  :message: ''
+  :unity_test_time: 0
+- :test: test_Touch_CallsSubscribers
+  :line: 208
   :message: ''
   :unity_test_time: 0
 :failures: []
 :ignores: []
 :counts:
-  :total: 11
-  :passed: 11
+  :total: 15
+  :passed: 15
   :failed: 0
   :ignored: 0
 :stdout: []
-:time: 0.005369933998736087
+:time: 0.014133528995444067

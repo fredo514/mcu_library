@@ -6,6 +6,8 @@ void Modelpoint_Init(modelpoint_t *const mp, modelpoint_config_t *const pConfig)
    mp->name = pConfig->name;
    mp->pData = pConfig->dataPtr;
    mp->dataSize = pConfig->dataSize_bytes;
+   memset(mp->subscribers, 0, sizeof(mp->subscribers) / sizeof(mp->subscribers[0]));
+   mp->subCount = 0;
 
    Modelpoint_Unlock(mp);
 
@@ -51,6 +53,8 @@ bool Modelpoint_Set(modelpoint_t *const mp, void const *const pNewValue) {
       mp->updateCount++;
       mp->isValid = true;
 
+      Modelpoint_Touch(mp);
+
       return true;
    }
 
@@ -72,4 +76,21 @@ uint32_t Modelpoint_UpdateCount_Get(modelpoint_t const *const mp) {
    Modelpoint_Unlock(mp);
 
    return count;
+}
+
+bool Modelpoint_Subscribe(modelpoint_t *const mp, mp_subscriberCb_t const cb) {
+   if (mp->subCount < MP_MAX_SUBSCRIBERS) {
+      mp->subscribers[mp->subCount] = cb;
+      mp->subCount++;
+
+      return true;
+   }
+
+   return false;
+}
+
+void Modelpoint_Touch(modelpoint_t const *const mp) {
+   for (uint8_t i = 0; i < mp->subCount; ++i) {
+      mp->subscribers[i]();
+   }
 }
