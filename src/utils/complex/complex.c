@@ -13,7 +13,7 @@ float cmag(complex_t z) {
 }
 
 float cphase(complex_t z) {
-    return atanf(z.imag / z.real);
+    return atan2f(z.imag / z.real);
 }
 
 complex_t cmul(complex_t z1, complex_t z2) {
