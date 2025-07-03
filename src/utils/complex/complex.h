@@ -1,6 +1,8 @@
 #ifndef COMPLEX_H
 #define COMPLEX_H
 
+#include <float.h>
+
 typedef struct {
     float real;
     float imag;
