@@ -1,12 +1,12 @@
-#ifndef COMPLEX_H
-#define COMPLEX_H
+#ifndef COMPLEX_CART_H
+#define COMPLEX_CART_H
 
 #include <float.h>
 
 typedef struct {
     float real;
     float imag;
-} complex_t;
+} complex_cart_t;
 
 float creal(complex_t z);
 float cimag(complex_t z);
