@@ -4,6 +4,7 @@
         "stdint.h": "c",
         "typeinfo": "c",
         "compare": "c",
-        "type_traits": "c"
+        "type_traits": "c",
+        "math.h": "c"
     }
 }

@@ -4,34 +4,34 @@
 #include <float.h>
 
 typedef struct {
-    float real;
-    float imag;
+   float real;
+   float imag;
 } complex_cart_t;
 
-float creal(complex_t z);
-float cimag(complex_t z);
-float cmag(complex_t z);
-float cphase(complex_t z);
+float ccart_real(complex_cart_t z);
+float ccart_imag(complex_cart_t z);
+float ccart_mag(complex_cart_t z);
+float ccart_phase(complex_cart_t z);
 
-complex_t cmul(complex_t z1, complex_t z2);
-complex_t cdiv(complex_t num, complex_t denum);
-complex_t cconj(complex_t z);
-complex_t cexp(complex_t z);
-complex_t clog(complex_t z);
-complex_t cpow(complex_t z, float exp);
-complex_t csqrt(complex_t z);
+complex_cart_t ccart_mul(complex_cart_t z1, complex_cart_t z2);
+complex_cart_t ccart_div(complex_cart_t num, complex_cart_t denum);
+// complex_cart_t cconj(complex_cart_t z);
+// complex_cart_t cexp(complex_cart_t z);
+// complex_cart_t clog(complex_cart_t z);
+// complex_cart_t cpow(complex_cart_t z, float exp);
+// complex_cart_t csqrt(complex_cart_t z);
 
-complex_t csin(complex_t z);
-complex_t casin(complex_t z);
-complex_t csinh(complex_t z);
-complex_t casinh(complex_t z);
-complex_t ccos(complex_t z);
-complex_t cacos(complex_t z);
-complex_t ccosh(complex_t z);
-complex_t cacosh(complex_t z);
-complex_t ctan(complex_t z);
-complex_t catan(complex_t z);
-complex_t ctanh(complex_t z);
-complex_t catanh(complex_t z);
+// complex_cart_t csin(complex_cart_t z);
+// complex_cart_t casin(complex_cart_t z);
+// complex_cart_t csinh(complex_cart_t z);
+// complex_cart_t casinh(complex_cart_t z);
+// complex_cart_t ccos(complex_cart_t z);
+// complex_cart_t cacos(complex_cart_t z);
+// complex_cart_t ccosh(complex_cart_t z);
+// complex_cart_t cacosh(complex_cart_t z);
+// complex_cart_t ctan(complex_cart_t z);
+// complex_cart_t catan(complex_cart_t z);
+// complex_cart_t ctanh(complex_cart_t z);
+// complex_cart_t catanh(complex_cart_t z);
 
 #endif
