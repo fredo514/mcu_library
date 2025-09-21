@@ -33,8 +33,13 @@ bool Queue_Is_Full(queue_h queue);
 bool Queue_Is_Empty(queue_h queue);
 
 error_t Queue_Push(queue_h queue, void const * const src_item);
+// error_t Queue_Push_Front(queue_h queue, void const * const src_item);
 error_t Queue_Pop(queue_h queue, void * const dest_item);
 // error_t queue_get(queue_h queue, queue_elem_t* val);
 // size_t queue_process_all(queue_h queue, void (*cb)(void *));
+
+#ifdef __DEBUG
+size_t Queue_Watermark_Get(queue_h queue);
+#endif // __DEBUG
 
 #endif // QUEUE_H
