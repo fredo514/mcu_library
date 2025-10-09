@@ -1,0 +1,1 @@
+Only prefer PPP over LAPB if need to transport IP over serial.
