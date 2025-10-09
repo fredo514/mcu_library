@@ -1,0 +1,1 @@
+COBS + CRC8/16 + Sequence
