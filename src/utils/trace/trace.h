@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define TRACE_DICT_ENTRY(obj)
+
 typedef uint32_t (*trace_time_now_cb_t)(void);
 
 typedef error_t (*trace_encode_cb_t)(uint8_t* const dest, size_t dest_len, uint8_t const* const src, size_t src_len);
