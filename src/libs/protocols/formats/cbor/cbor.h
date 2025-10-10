@@ -1,22 +1,16 @@
 #ifndef CBOR_H
 #define CBOR_H
 
-typedef enum {
-   CBOR_TYPE_UINT = 0x0,
-   CBOR_TYPE_INT = 0x1,
-   CBOR_TYPE_BYTE_STR = 0x2,
-   CBOR_TYPE_UTF8_STR = 0x3,
-   CBOR_TYPE_TUPLE = 0x4,    // mixed type array
-   CBOR_TYPE_MAP = 0x5,      // key-value pairs
-   CBOR_TYPE_TAG = 0x6,      // see cbor_tag_t
-   CBOR_TYPE_SPECIAL = 0x7,  // see cbor_special_t
-} cbor_type_t;
+typedef struct cbor_encoder cbor_encoder_t;
 
-typedef enum {} cbor_tag_t;
+typedef struct {
+   uint8_t* dest;
+   size_t dest_len;
+} cbor_config_t;
 
-typedef enum {} cbor_special_t;
+void Cbor_Encoder_Init(cbor_encoder_t* const encoder, cbor_config_t const* const config);
 
-error_t Cbor_Encode(uint8_t* const dest, size_t dest_len, uint8_t const* const src, size_t src_len);
-error_t Cbor_Decode(uint8_t* const dest, size_t dest_len, uint8_t const* const src, size_t src_len);
+error_t Cbor_Put_Tstr(cbor_encoder_t* const encoder, char const* const str);
+error_t Cbor_Put_Float(cbor_encoder_t* const encoder, float x);
 
 #endif
