@@ -9,6 +9,12 @@
 
 typedef enum { MP_STATE_NOSUBS, MP_STATE_IDLE, MP_STATE_PENDING, MP_STATE_MAX } mp_state_t;
 
+typedef enum {
+   MP_SUB_TYPE_ALWAYS,
+   MP_SUB_TYPE_ONCHANGE,
+   MP_SUB_TYPE_MAX
+} mp_sub_type_t;
+
 typedef void (*mp_subscriberCb_t)(void);
 
 typedef struct {
@@ -41,7 +47,7 @@ bool Modelpoint_Unlock(modelpoint_t *const mp);
 
 bool Modelpoint_IsValid(modelpoint_t const *const mp);
 
-bool Modelpoint_Subscribe(modelpoint_t *const mp, mp_subscriberCb_t const cb);
+bool Modelpoint_Subscribe(modelpoint_t *const mp, mp_subscriberCb_t const cb, mp_sub_type_t sub_type);
 // Modelpoint_Unsubscribe()
 void Modelpoint_Touch(modelpoint_t const *const mp);
 // Modelpoint_CopyFrom()
