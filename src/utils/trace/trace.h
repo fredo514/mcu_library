@@ -3,7 +3,14 @@
 
 #include <stdint.h>
 
-#define TRACE_DICT_ENTRY(obj)
+#define TRACE_DICT_ENTRY(obj)                \
+   do {                                      \
+      static char_t const obj_name[] = #obj; \
+      Trace_Begin(TRACE_TYPE_DICT_ENTRY);    \
+      Trace_Log_Uintptr(&obj);               \
+      Trace_Log_Str(&obj_name[0]);           \
+      Trace_End();                           \
+   } while (0)
 
 typedef uint32_t (*trace_time_now_cb_t)(void);
 
