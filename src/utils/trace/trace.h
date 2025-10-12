@@ -3,14 +3,26 @@
 
 #include <stdint.h>
 
-#define TRACE_DICT_ENTRY(obj)                \
+#define TRACE_DICT_ENTRY(type, obj)          \
    do {                                      \
       static char_t const obj_name[] = #obj; \
       Trace_Begin(TRACE_TYPE_DICT_ENTRY);    \
+      Trace_Log_Uint8(type);                 \
       Trace_Log_Uintptr(&obj);               \
       Trace_Log_Str(&obj_name[0]);           \
       Trace_End();                           \
    } while (0)
+
+typedef enum {
+   TRACE_TYPE_DICT_ENTRY,
+   TRACE_TYPE_MAX,
+} trace_type_t;
+
+typedef enum {
+   TRACE_DICT_ENTRY_FUNC,
+   TRACE_DICT_ENTRY_VAR,
+   TRACE_DICT_ENTRY_TYPE_MAX,
+} trace_dict_entry_type_t;
 
 typedef uint32_t (*trace_time_now_cb_t)(void);
 
