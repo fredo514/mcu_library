@@ -1,57 +1,51 @@
 #ifndef HSM_H
 #define HSM_H
 
+#include "error.h"
 #include "stdbool.h"
 
-typedef enum {
-    HSM_STATE_INIT = 0,
-    HSM_STATE_USER_DEFINED_START
-} HSM_STATE_t;
+#ifndef HSM_MAX_DEPTH
+#define HSM_MAX_DEPTH 16
+#endif
 
 typedef enum {
-    HSM_SIG_EMPTY = 0,
-    HSM_SIG_INIT,
-    HSM_SIG_ENTRY,
-    HSM_SIG_EXIT,
-    HSM_SIG_USER_DEFINED_START
-} HSM_SIG_t;
+   HSM_SIG_EMPTY = 0,
+   HSM_SIG_INIT,
+   HSM_SIG_ENTRY,
+   HSM_SIG_EXIT,
+   HSM_SIG_USER_DEFINED_START,
+} hsm_sig_t;
 
 typedef enum {
-    // unhandled and bubbled up
-    HSM_STATUS_SUPER,       // event passed to parent
-    HSM_STATUS_SUPER_SUB,   // ??
-    HSM_STATUS_UNHANDLED,   // Event unhandled due to guard condition
-
-    // handled
-    HSM_STATUS_HANDLED,     // Event processed (internal transition)
-    HSM_STATUS_IGNORED,     // Event ignored by top level state
-
-    // entry/exit
-    HSM_STATUS_ENTRY,       // State entry action executed
-    HSM_STATUS_EXIT,        // State exit action executed
-
-    HSM_STATUS_NULL,        // ??
-
-    // need to execute transition action
-    HSM_STATUS_TRAN,        // regular transition
-    HSM_STATUS_TRAN_INIT,   // initial transition
-    HSM_STATUS_TRAN_ENTRY,  // entry transition
-    HSM_STATUS_TRAN_HIST,   // transition into last active substate
-    HSM_STATUS_TRAN_EXIT,   // exit transition
-    HSM_STATUS_MAX
-} HSM_STATUS_t;
+   HSM_STATUS_SUPER,      // event passed to parent
+   HSM_STATUS_UNHANDLED,  // Event unhandled due to guard condition
+   HSM_STATUS_HANDLED,    // Event processed (internal transition)
+   HSM_STATUS_IGNORED,    // Event ignored by top level state
+   HSM_STATUS_TRAN,       // regular transition
+   HSM_STATUS_MAX
+} hsm_status_t;
 
 typedef struct {
-    HSM_SIG_t sig;
-} HSM_EVT_t;
+   hsm_sig_t signal;
+   void* param;
+} hsm_event_t;
 
-typedef struct hsm_state_ctx HSM_STATE_t;
-typedef struct HSM_CTX * const HSM_h;
+typedef struct hsm_ctx hsm_t;
 
-HSM_h Hsm_Create(void);
-ERROR_CODE_t Hsm_Init(HSM_h sm, HSM_STATE_t const * const state_map); 
+typedef hsm_status_t (*hsm_statehandler_t)(hsm_t* const sm, hsm_event_t const* const e);
 
-bool Hsm_Dispatch(HSM_h sm, HSM_EVT_t * event); 
-HSM_STATE_t Hsm_State_Get(HSM_h sm);
+typedef struct hsm_state {
+   const struct hsm_state* const parent;   // NULL for top)
+   const struct hsm_state* const initial;  // initial child; NULL if none (leaf)
+   hsm_statehandler_t handler;             // state handler
+} hsm_state_t;
 
-#endif // HSM_H
+hsm_t* Hsm_Create(void);
+void Hsm_Init(hsm_t* const sm, hsm_state_t* const top_state);
+
+void Hsm_Dispatch(hsm_t* const sm, hsm_event_t* const event);
+
+hsm_state_t* Hsm_State_Get(hsm_t* const sm);
+void Hsm_State_Set(hsm_t* const sm, hsm_state_t* const state);
+
+#endif  // HSM_H
