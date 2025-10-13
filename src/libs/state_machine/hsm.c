@@ -36,9 +36,6 @@ void Hsm_Init(hsm_t *const sm, hsm_state_t const *const pInitial_state) {
    hsm_state_t const *target_ancestors[HSM_MAX_DEPTH] = {0};
    uint8_t depth = Build_Ancestor_List(target_ancestors, pInitial_state, NULL);
 
-   // make sure we didn't blew past max
-   assert(depth <= HSM_MAX_DEPTH);
-
    // post entry action from top to leaf
    Enter_Down_To(sm, target_ancestors, depth);
 
@@ -128,6 +125,9 @@ static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestors_list, hsm
          depth++;
       }
    }
+
+   // make sure we didn't blew past max
+   assert(depth <= HSM_MAX_DEPTH);
 
    return depth;
 }
