@@ -8,6 +8,12 @@
 #define HSM_MAX_DEPTH 16
 #endif
 
+#define HSM_TRAN(target_state_ptr)           \
+   do {                                      \
+      sm->target_state = (target_state_ptr); \
+      return HSM_STATUS_TRAN;                \
+   } while (0)
+
 typedef enum {
    HSM_SIG_EMPTY = 0,
    HSM_SIG_INIT,
@@ -17,7 +23,6 @@ typedef enum {
 } hsm_sig_t;
 
 typedef enum {
-   HSM_STATUS_SUPER,      // event passed to parent
    HSM_STATUS_UNHANDLED,  // Event unhandled due to guard condition
    HSM_STATUS_HANDLED,    // Event processed (internal transition)
    HSM_STATUS_IGNORED,    // Event ignored by top level state
@@ -32,20 +37,25 @@ typedef struct {
 
 typedef struct hsm_ctx hsm_t;
 
-typedef hsm_status_t (*hsm_statehandler_t)(hsm_t* const sm, hsm_event_t const* const e);
+typedef hsm_status_t (*hsm_statehandler_t)(hsm_t* const sm, hsm_sig_t const signal);
 
 typedef struct hsm_state {
-   const struct hsm_state* const parent;   // NULL for top)
-   const struct hsm_state* const initial;  // initial child; NULL if none (leaf)
-   hsm_statehandler_t handler;             // state handler
+   struct hsm_state* const parent;    // NULL for top
+   hsm_statehandler_t const handler;  // state handler
 } hsm_state_t;
 
-hsm_t* Hsm_Create(void);
-void Hsm_Init(hsm_t* const sm, hsm_state_t* const top_state);
+struct hsm_ctx {
+   hsm_state_t* curr_state;   /* current active leaf state */
+   hsm_state_t* target_state; /* transition target (set by handler via macro) */
+};
 
-void Hsm_Dispatch(hsm_t* const sm, hsm_event_t* const event);
+extern hsm_state_t hsm_top_state;
 
-hsm_state_t* Hsm_State_Get(hsm_t* const sm);
+void Hsm_Init(hsm_t* const sm, hsm_state_t const* const initial_state);
+
+void Hsm_Dispatch(hsm_t* const sm, hsm_sig_t const signal);
+
+hsm_state_t* Hsm_State_Get(hsm_t const* const sm);
 void Hsm_State_Set(hsm_t* const sm, hsm_state_t* const state);
 
 #endif  // HSM_H
