@@ -62,11 +62,11 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
       }
       // init signal must result in nothing or transition
       if (signal == HSM_SIG_INIT) {
-         assert((ret == HSM_STATUS_IGNORED) || (ret == HSM_STATUS_TRAN));
+         assert((ret == HSM_STATUS_UNHANDLED) || (ret == HSM_STATUS_TRAN));
       }
 
       // init (if not explicitely causing transition), entry and exit actions are always handled
-      if ((signal == HSM_SIG_ENTRY) || (signal == HSM_SIG_ENTRY) ||
+      if ((signal == HSM_SIG_ENTRY) || (signal == HSM_SIG_EXIT) ||
           ((signal == HSM_SIG_INIT) && (ret != HSM_STATUS_TRAN))) {
          ret = HSM_STATUS_HANDLED;
       }

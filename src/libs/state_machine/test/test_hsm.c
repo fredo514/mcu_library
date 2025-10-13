@@ -147,19 +147,7 @@ hsm_status_t B1_Handler(hsm_t* const sm, hsm_sig_t const signal) {
    last_b1_event = signal;
    printf("state: b1, signal: %u\n", signal);
 
-   switch (signal) {
-      case HSM_SIG_INIT:
-         return HSM_STATUS_IGNORED;
-         break;
-
-      case HSM_SIG_ENTRY:
-         return HSM_STATUS_HANDLED;
-         break;
-
-      case HSM_SIG_EXIT:
-         return HSM_STATUS_HANDLED;
-         break;
-   }
+   switch (signal) {}
 
    return HSM_STATUS_UNHANDLED;
 }
