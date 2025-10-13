@@ -53,7 +53,6 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
    hsm_state_t *state = sm->curr_state;
 
    // try to handle the event
-   // if not, try to have a parent handle it
    do {
       ret = state->handler(sm, signal);
       // transitions are illegal as outcome of entry or exit
@@ -66,6 +65,12 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
          assert((ret == HSM_STATUS_IGNORED) || (ret == HSM_STATUS_TRAN));
       }
 
+      // init (if not explicitely causing transition), entry and exit actions are always handled
+      if ((signal == HSM_SIG_ENTRY) || (signal == HSM_SIG_ENTRY) ||
+          ((signal == HSM_SIG_INIT) && (ret != HSM_STATUS_TRAN))) {
+         ret = HSM_STATUS_HANDLED;
+      }
+      // if not, try to have a parent handle it
       state = state->parent;
    } while (ret == HSM_STATUS_UNHANDLED);
 

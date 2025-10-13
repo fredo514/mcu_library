@@ -84,18 +84,6 @@ hsm_status_t A_Handler(hsm_t* const sm, hsm_sig_t const signal) {
    printf("state: a, signal: %u\n", signal);
 
    switch (signal) {
-      case HSM_SIG_INIT:
-         return HSM_STATUS_IGNORED;
-         break;
-
-      case HSM_SIG_ENTRY:
-         return HSM_STATUS_HANDLED;
-         break;
-
-      case HSM_SIG_EXIT:
-         return HSM_STATUS_HANDLED;
-         break;
-
       case A1_SIG:
          HSM_TRAN(&state_a1);
          break;
@@ -113,18 +101,6 @@ hsm_status_t A1_Handler(hsm_t* const sm, hsm_sig_t const signal) {
    printf("state: a1, signal: %u\n", signal);
 
    switch (signal) {
-      case HSM_SIG_INIT:
-         return HSM_STATUS_IGNORED;
-         break;
-
-      case HSM_SIG_ENTRY:
-         return HSM_STATUS_HANDLED;
-         break;
-
-      case HSM_SIG_EXIT:
-         return HSM_STATUS_HANDLED;
-         break;
-
       case A_SIG:
          HSM_TRAN(&state_a);
          break;
@@ -150,18 +126,6 @@ hsm_status_t A2_Handler(hsm_t* const sm, hsm_sig_t const signal) {
    printf("state: a2, signal: %u\n", signal);
 
    switch (signal) {
-      case HSM_SIG_INIT:
-         return HSM_STATUS_IGNORED;
-         break;
-
-      case HSM_SIG_ENTRY:
-         return HSM_STATUS_HANDLED;
-         break;
-
-      case HSM_SIG_EXIT:
-         return HSM_STATUS_HANDLED;
-         break;
-
       case A2_SIG:
          return HSM_STATUS_HANDLED;
          break;
@@ -174,19 +138,7 @@ hsm_status_t B_Handler(hsm_t* const sm, hsm_sig_t const signal) {
    last_b_event = signal;
    printf("state: b, signal: %u\n", signal);
 
-   switch (signal) {
-      case HSM_SIG_INIT:
-         return HSM_STATUS_IGNORED;
-         break;
-
-      case HSM_SIG_ENTRY:
-         return HSM_STATUS_HANDLED;
-         break;
-
-      case HSM_SIG_EXIT:
-         return HSM_STATUS_HANDLED;
-         break;
-   }
+   switch (signal) {}
 
    return HSM_STATUS_UNHANDLED;
 }
@@ -359,5 +311,13 @@ void test_dispatch_handled_internal(void) {
 }
 
 void test_dispatch_initial_transition(void) {
+   TEST_FAIL();
+}
+
+void test_dispatch_entry_action(void) {
+   TEST_FAIL();
+}
+
+void test_dispatch_exit_action(void) {
    TEST_FAIL();
 }
