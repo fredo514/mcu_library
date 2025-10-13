@@ -321,3 +321,7 @@ void test_dispatch_unhandled_pass_to_parent_then_transition(void) {
 void test_dispatch_initial_transition(void) {
    TEST_FAIL();
 }
+
+void test_dispatch_transition_to_history(void) {
+   TEST_FAIL();
+}
