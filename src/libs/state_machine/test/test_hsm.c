@@ -272,7 +272,15 @@ void test_dispatch_transition_to_direct_parent(void) {
    TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b1_event);
 }
 
-void test_dispatch_complex_transition(void) {
+void test_dispatch_transition_to_own_grandchild(void) {
+   TEST_FAIL();
+}
+
+void test_dispatch_transition_to_sibling_child(void) {
+   TEST_FAIL();
+}
+
+void test_dispatch_transition_to_ancestor_sibling_child(void) {
    Clean_Sigs();
 
    Hsm_Dispatch(&sm, B1_SIG);
@@ -289,7 +297,11 @@ void test_dispatch_complex_transition(void) {
    TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_a2_event);
 }
 
-void test_dispatch_unhandled_pass_to_parent(void) {
+void test_dispatch_transition_to_ancestor(void) {
+   TEST_FAIL();
+}
+
+void test_dispatch_unhandled_pass_to_parent_then_transition(void) {
    Clean_Sigs();
 
    Hsm_Dispatch(&sm, B_SIG);
