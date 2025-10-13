@@ -168,6 +168,33 @@ void test_init(void) {
    TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b1_event);
 }
 
+void test_dispatch_handled_internal(void) {
+   Clean_Sigs();
+
+   Hsm_State_Set(&sm, &state_a2);
+
+   Hsm_Dispatch(&sm, A2_SIG);
+
+   TEST_ASSERT_EQUAL(&state_a2, Hsm_State_Get(&sm));
+
+   // then entry signals down to the target
+   TEST_ASSERT_EQUAL(A2_SIG, last_a2_event);
+
+   // but not others
+   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_a_event);
+   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_a1_event);
+   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b_event);
+   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b1_event);
+}
+
+void test_dispatch_entry_action(void) {
+   TEST_FAIL();
+}
+
+void test_dispatch_exit_action(void) {
+   TEST_FAIL();
+}
+
 void test_dispatch_transition_to_self(void) {
    Clean_Sigs();
 
@@ -279,33 +306,6 @@ void test_dispatch_unhandled_pass_to_parent(void) {
    TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b1_event);
 }
 
-void test_dispatch_handled_internal(void) {
-   Clean_Sigs();
-
-   Hsm_State_Set(&sm, &state_a2);
-
-   Hsm_Dispatch(&sm, A2_SIG);
-
-   TEST_ASSERT_EQUAL(&state_a2, Hsm_State_Get(&sm));
-
-   // then entry signals down to the target
-   TEST_ASSERT_EQUAL(A2_SIG, last_a2_event);
-
-   // but not others
-   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_a_event);
-   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_a1_event);
-   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b_event);
-   TEST_ASSERT_EQUAL(HSM_SIG_EMPTY, last_b1_event);
-}
-
 void test_dispatch_initial_transition(void) {
-   TEST_FAIL();
-}
-
-void test_dispatch_entry_action(void) {
-   TEST_FAIL();
-}
-
-void test_dispatch_exit_action(void) {
    TEST_FAIL();
 }
