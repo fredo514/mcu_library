@@ -9,10 +9,10 @@
 #endif
 
 #define HSM_TRAN(target_state_ptr)           \
-   do {                                      \
+   ({                                        \
       sm->target_state = (target_state_ptr); \
-      return HSM_STATUS_TRAN;                \
-   } while (0)
+      HSM_STATUS_TRAN;                       \
+   })
 
 typedef enum {
    HSM_SIG_EMPTY = 0,
@@ -53,6 +53,7 @@ extern hsm_state_t hsm_top_state;
 
 void Hsm_Init(hsm_t* const sm, hsm_state_t const* const initial_state);
 
+// void Hsm_Dispatch(hsm_t* const sm, hsm_event_t const * const event);
 void Hsm_Dispatch(hsm_t* const sm, hsm_sig_t const signal);
 
 hsm_state_t* Hsm_State_Get(hsm_t const* const sm);
