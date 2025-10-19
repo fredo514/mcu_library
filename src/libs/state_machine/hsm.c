@@ -8,8 +8,8 @@
 
 static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestor_list, hsm_state_t const *const source,
                                    hsm_state_t const *const ancestor);
-static void Exit_Up_To(hsm_t *const sm, hsm_state_t const *const source, hsm_state_t const *const lca);
-static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_state_t const *const lca);
+static void Exit_Up_To(hsm_t *const sm, hsm_state_t const *const source, hsm_state_t const *const ancestor);
+static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_state_t const *const ancestor);
 static hsm_state_t *Find_Lca(hsm_state_t const *const source, hsm_state_t const *const target);
 
 static hsm_status_t Top_Handler(hsm_t *const sm, hsm_sig_t const signal);
@@ -32,6 +32,14 @@ static hsm_event_t init_event = {
     .param = NULL,
 };
 
+/**
+ * @brief Handler for top state.
+ *
+ * @param[inout] sm   State-machine object.
+ * @param event Event to process.
+ *
+ * @return Event processing status.
+ */
 static hsm_status_t Top_Handler(hsm_t *const sm, hsm_sig_t const signal) {
    (void)sm;
    (void)signal;
@@ -40,6 +48,12 @@ static hsm_status_t Top_Handler(hsm_t *const sm, hsm_sig_t const signal) {
    return HSM_STATUS_IGNORED;
 }
 
+/**
+ * @brief Allocate a state-machine instance on the heap.
+ * @note Hsm_Init must be called on the instance before use
+ *
+ * @return Pointer to the created instance.
+ */
 hsm_t *Hsm_Create(void) {
    hsm_t *inst = calloc(1, sizeof(hsm_t));
    assert(inst);
@@ -47,6 +61,15 @@ hsm_t *Hsm_Create(void) {
    return inst;
 }
 
+/**
+ * @brief Initialize a state machine. Posts entry events to the hierarchy of state from top to the given initial state
+ * then set the current state to the given initial state.
+ *
+ * @param[inout] sm   State-machine object.
+ * @param[in] pInitial_state Initial state to start in.
+ *
+ * @return None
+ */
 void Hsm_Init(hsm_t *const sm, hsm_state_t const *const pInitial_state) {
    assert(sm);
    assert(pInitial_state);
@@ -63,6 +86,14 @@ void Hsm_Init(hsm_t *const sm, hsm_state_t const *const pInitial_state) {
    Hsm_Dispatch(sm, HSM_SIG_INIT);
 }
 
+/**
+ * @brief Feeds the given event to the current state or its ancestors and handles resulting state transitions.
+ *
+ *  @param[inout] sm   State-machine object.
+ * @param event Event to process.
+ *
+ * @return None
+ */
 void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
    assert(sm);
 
@@ -137,14 +168,42 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
    }
 }
 
+/**
+ * @brief Return the current state-machine state.
+ *
+ * @param[in] sm   State-machine object.
+ *
+ * @return Current state.
+ */
 hsm_state_t *Hsm_State_Get(hsm_t const *const sm) {
    return sm->curr_state;
 }
 
+/**
+ * @brief Force change the current state of the state-machine.
+ * @note ONLY FOR TESTING
+ *
+ * @param[in] sm   State-machine object.
+ * @param[in] pTarget_state   Target state.
+ *
+ * @return None
+ */
 void Hsm_State_Set(hsm_t *const sm, hsm_state_t *const pTarget_state) {
    sm->curr_state = pTarget_state;
+
+   // TODO: post entry?
 }
 
+/**
+ * @brief Populate the provided array with the hierarchy tree from the given source state to (but excluding) the given
+ * ancestor.
+ *
+ * @param[out] ancestors_list   Array of source ancestors.
+ * @param[in] source   Source state.
+ * @param[in] ancestor   Ultimate ancestor.
+ *
+ * @return number of ancestors populated in array.
+ */
 static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestors_list, hsm_state_t const *const source,
                                    hsm_state_t const *const ancestor) {
    uint8_t depth = 0;
@@ -164,12 +223,21 @@ static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestors_list, hsm
    return depth;
 }
 
-static void Exit_Up_To(hsm_t *const sm, hsm_state_t const *const source, hsm_state_t const *const lca) {
+/**
+ * @brief Post exit events to all ancestry of source to (but excluding) ancestor.
+ *
+ * @param[out] ancestors_list   Array of source ancestors.
+ * @param[in] source   Source state.
+ * @param[in] ancestor   Ultimate ancestor.
+ *
+ * @return None
+ */
+static void Exit_Up_To(hsm_t *const sm, hsm_state_t const *const source, hsm_state_t const *const ancestor) {
    hsm_state_t const *curr_state = source;
    hsm_status_t ret = HSM_STATUS_UNHANDLED;
 
    // post exit from current to child of LCA
-   while (curr_state && (curr_state != lca)) {
+   while (curr_state && (curr_state != ancestor)) {
       ret = curr_state->handler(sm, HSM_SIG_EXIT);
       // transitions are illegal as outcome of exit
       assert(ret != HSM_STATUS_TRAN);
@@ -178,10 +246,19 @@ static void Exit_Up_To(hsm_t *const sm, hsm_state_t const *const source, hsm_sta
    }
 }
 
-static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_state_t const *const lca) {
-   // build child list from lca to target
+/**
+ * @brief Post entry events to all ancestry of (but excluding) ancestor to target.
+ *
+ * @param[out] ancestors_list   Array of source ancestors.
+ * @param[in] target   target state.
+ * @param[in] ancestor   Ultimate ancestor.
+ *
+ * @return None
+ */
+static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_state_t const *const ancestor) {
+   // build child list from ancestor to target
    hsm_state_t *ancestors[HSM_MAX_DEPTH] = {0};
-   uint8_t depth = Build_Ancestor_List(ancestors, target, lca);
+   uint8_t depth = Build_Ancestor_List(ancestors, target, ancestor);
    hsm_status_t ret = HSM_STATUS_UNHANDLED;
 
    // post entry to all starting with topmost
@@ -192,6 +269,14 @@ static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_
    }
 }
 
+/**
+ * @brief Find the closest ancestor of 2 states.
+ *
+ * @param[in] source   source state.
+ * @param[in] target   target state.
+ *
+ * @return least common ancestor
+ */
 static hsm_state_t *Find_Lca(hsm_state_t const *const source, hsm_state_t const *const target) {
    // note: will always at least find top in common
    // starting from source of transition up to top
