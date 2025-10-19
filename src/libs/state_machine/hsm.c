@@ -40,6 +40,13 @@ static hsm_status_t Top_Handler(hsm_t *const sm, hsm_sig_t const signal) {
    return HSM_STATUS_IGNORED;
 }
 
+hsm_t *Hsm_Create(void) {
+   hsm_t *inst = calloc(1, sizeof(hsm_t));
+   assert(inst);
+
+   return inst;
+}
+
 void Hsm_Init(hsm_t *const sm, hsm_state_t const *const pInitial_state) {
    assert(sm);
    assert(pInitial_state);

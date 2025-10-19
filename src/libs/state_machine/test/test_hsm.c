@@ -60,7 +60,8 @@ static hsm_state_t state_b1 = {
     .handler = &B1_Handler,
 };
 
-hsm_t sm;
+// hsm_t sm;
+hsm_t* sm;
 
 static hsm_sig_t last_top_event;
 static hsm_sig_t last_a_event;
@@ -198,12 +199,14 @@ static hsm_status_t B1_Handler(hsm_t* const sm, hsm_sig_t const signal) {
 }
 
 void setUp(void) {
-   Hsm_Init(&sm, &state_a1);
+   sm = Hsm_Create();
+   Hsm_Init(sm, &state_a1);
 
    Clean_Sigs();
 }
 
 void tearDown(void) {
+   free(sm);
 }
 
 static void Clean_Sigs(void) {
@@ -224,10 +227,10 @@ static void Clean_Sigs(void) {
 }
 
 void test_init(void) {
-   Hsm_Init(&sm, &state_a1);
+   Hsm_Init(sm, &state_a1);
 
    // is in provided initial state
-   TEST_ASSERT_EQUAL(&state_a1, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a1, Hsm_State_Get(sm));
 
    // posted init to initial
    TEST_ASSERT_EQUAL(HSM_SIG_INIT, last_a1_event);
@@ -244,11 +247,11 @@ void test_init(void) {
 }
 
 void test_dispatch_handled_internal(void) {
-   Hsm_State_Set(&sm, &state_a2);
+   Hsm_State_Set(sm, &state_a2);
 
-   Hsm_Dispatch(&sm, A2_SIG);
+   Hsm_Dispatch(sm, A2_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a2, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a2, Hsm_State_Get(sm));
 
    // has posted event to current state
    TEST_ASSERT_EQUAL(A2_SIG, last_a2_event);
@@ -263,7 +266,7 @@ void test_dispatch_handled_internal(void) {
 }
 
 void test_dispatch_unhandled_pass_to_parent_no_transition(void) {
-   Hsm_Dispatch(&sm, A_INT_SIG);
+   Hsm_Dispatch(sm, A_INT_SIG);
 
    // has posted event to current state up to parent that handle it
    TEST_ASSERT_EQUAL(A_INT_SIG, last_a1_event);
@@ -280,7 +283,7 @@ void test_dispatch_unhandled_pass_to_parent_no_transition(void) {
 }
 
 void test_dispatch_unhandled_top_sink(void) {
-   Hsm_Dispatch(&sm, UNKNOWN_SIG);
+   Hsm_Dispatch(sm, UNKNOWN_SIG);
 
    // has posted event to current state up to parent that handle it
    TEST_ASSERT_EQUAL(UNKNOWN_SIG, last_a1_event);
@@ -295,21 +298,21 @@ void test_dispatch_unhandled_top_sink(void) {
 }
 
 void test_dispatch_entry_action(void) {
-   Hsm_Dispatch(&sm, A1_SIG);
+   Hsm_Dispatch(sm, A1_SIG);
 
    TEST_ASSERT_TRUE(is_a1_entry_executed);
 }
 
 void test_dispatch_exit_action(void) {
-   Hsm_Dispatch(&sm, A1_SIG);
+   Hsm_Dispatch(sm, A1_SIG);
 
    TEST_ASSERT_TRUE(is_a1_exit_executed);
 }
 
 void test_dispatch_transition_to_self(void) {
-   Hsm_Dispatch(&sm, A1_SIG);
+   Hsm_Dispatch(sm, A1_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a1, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a1, Hsm_State_Get(sm));
 
    // then entry signals down to the target
    TEST_ASSERT_EQUAL(HSM_SIG_INIT, last_a1_event);
@@ -324,11 +327,11 @@ void test_dispatch_transition_to_self(void) {
 }
 
 void test_dispatch_transition_to_direct_child(void) {
-   Hsm_State_Set(&sm, &state_a);
+   Hsm_State_Set(sm, &state_a);
 
-   Hsm_Dispatch(&sm, A1_SIG);
+   Hsm_Dispatch(sm, A1_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a1, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a1, Hsm_State_Get(sm));
 
    // then entry signals down to the target
    TEST_ASSERT_EQUAL(HSM_SIG_INIT, last_a1_event);
@@ -343,9 +346,9 @@ void test_dispatch_transition_to_direct_child(void) {
 }
 
 void test_dispatch_transition_to_direct_sibling(void) {
-   Hsm_Dispatch(&sm, A2_SIG);
+   Hsm_Dispatch(sm, A2_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a2, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a2, Hsm_State_Get(sm));
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a1_event);
@@ -362,9 +365,9 @@ void test_dispatch_transition_to_direct_sibling(void) {
 }
 
 void test_dispatch_transition_to_direct_parent(void) {
-   Hsm_Dispatch(&sm, A_SIG);
+   Hsm_Dispatch(sm, A_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a, Hsm_State_Get(sm));
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a1_event);
@@ -381,11 +384,11 @@ void test_dispatch_transition_to_direct_parent(void) {
 }
 
 void test_dispatch_transition_to_own_grandchild(void) {
-   Hsm_State_Set(&sm, &state_a);
+   Hsm_State_Set(sm, &state_a);
 
-   Hsm_Dispatch(&sm, A31_SIG);
+   Hsm_Dispatch(sm, A31_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a31, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a31, Hsm_State_Get(sm));
 
    TEST_ASSERT_EQUAL(A31_SIG, last_a_event);
 
@@ -401,9 +404,9 @@ void test_dispatch_transition_to_own_grandchild(void) {
 }
 
 void test_dispatch_transition_to_sibling_child(void) {
-   Hsm_Dispatch(&sm, A31_SIG);
+   Hsm_Dispatch(sm, A31_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a31, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a31, Hsm_State_Get(sm));
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a1_event);
@@ -420,7 +423,7 @@ void test_dispatch_transition_to_sibling_child(void) {
 }
 
 void test_dispatch_transition_to_ancestor_sibling_child(void) {
-   Hsm_Dispatch(&sm, B1_SIG);
+   Hsm_Dispatch(sm, B1_SIG);
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a1_event);
@@ -437,11 +440,11 @@ void test_dispatch_transition_to_ancestor_sibling_child(void) {
 }
 
 void test_dispatch_transition_to_ancestor(void) {
-   Hsm_State_Set(&sm, &state_a31);
+   Hsm_State_Set(sm, &state_a31);
 
-   Hsm_Dispatch(&sm, A_SIG);
+   Hsm_Dispatch(sm, A_SIG);
 
-   TEST_ASSERT_EQUAL(&state_a, Hsm_State_Get(&sm));
+   TEST_ASSERT_EQUAL(&state_a, Hsm_State_Get(sm));
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a31_event);
@@ -458,7 +461,7 @@ void test_dispatch_transition_to_ancestor(void) {
 }
 
 void test_dispatch_unhandled_pass_to_parent_then_transition(void) {
-   Hsm_Dispatch(&sm, B_SIG);
+   Hsm_Dispatch(sm, B_SIG);
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a1_event);
@@ -475,7 +478,7 @@ void test_dispatch_unhandled_pass_to_parent_then_transition(void) {
 }
 
 void test_dispatch_initial_transition_nested(void) {
-   Hsm_Dispatch(&sm, A3_SIG);
+   Hsm_Dispatch(sm, A3_SIG);
 
    // has posted exit signals to all parent states up to least common ancestor
    TEST_ASSERT_EQUAL(HSM_SIG_EXIT, last_a1_event);
@@ -492,7 +495,7 @@ void test_dispatch_initial_transition_nested(void) {
 }
 
 void test_dispatch_initial_action(void) {
-   Hsm_Dispatch(&sm, A1_SIG);
+   Hsm_Dispatch(sm, A1_SIG);
 
    TEST_ASSERT_TRUE(is_a1_init_executed);
 }
