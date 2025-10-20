@@ -46,7 +46,7 @@ void test_push_2_retrieve_in_order(void) {
    TEST_FAIL();
 }
 
-void test_push_full(void) {
+void test_push_not_enough_space_left(void) {
    TEST_FAIL();
 }
 
@@ -55,5 +55,9 @@ void test_push_wrap(void) {
 }
 
 void test_pop_empty(void) {
+   TEST_FAIL();
+}
+
+void test_Is_Msg_Available_exactly_full(void) {
    TEST_FAIL();
 }
