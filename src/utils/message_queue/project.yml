@@ -15,7 +15,7 @@
   :use_mocks: TRUE
   :use_test_preprocessor: :none  # options are :none, :mocks, :tests, or :all
   :use_deep_preprocessor: :none  # options are :none, :mocks, :tests, or :all
-  :use_backtrace: :simple        # options are :none, :simple, or :gdb
+  :use_backtrace: :gdb        # options are :none, :simple, or :gdb
   :use_decorators: :auto         # decorate Ceedling's output text. options are :auto, :all, or :none
 
   # tweak the way ceedling handles automatic tasks
@@ -128,17 +128,18 @@
   :use_test_definition: FALSE 
 
 # Configure additional command line flags provided to tools used in each build step
-# :flags:
+:flags:
 #   :release:
 #     :compile:         # Add '-Wall' and '--02' to compilation of all files in release target
 #       - -Wall
 #       - --O2
-#   :test:
-#     :compile:
+  :test:
+    :compile:
 #       '(_|-)special': # Add '-pedantic' to compilation of all files in all test executables with '_special' or '-special' in their names
 #         - -pedantic
-#       '*':            # Add '-foo' to compilation of all files in all test executables
+      '*':            # Add '-foo' to compilation of all files in all test executables
 #         - -foo
+        - -g
 
 # Configuration Options specific to CMock. See CMock docs for details
 :cmock:
@@ -147,7 +148,7 @@
     - :ignore
     - :callback
   :verbosity:  2                   # the options being 0 errors only, 1 warnings and errors, 2 normal info, 3 verbose
-  :when_no_prototypes:  :warn      # the options being :ignore, :warn, or :erro
+  :when_no_prototypes:  :erro      # the options being :ignore, :warn, or :erro
 
   # File configuration
   :skeleton_path:  ''              # Subdirectory to store stubs when generated (default: '')
@@ -200,7 +201,7 @@
 # Configuration options specific to Unity. 
 :unity:
   :defines:
-    - UNITY_EXCLUDE_FLOAT
+    # - UNITY_EXCLUDE_FLOAT
 
 # You can optionally have ceedling create environment variables for you before
 # performing the rest of its tasks.
@@ -221,7 +222,8 @@
   :placement: :end
   :flag: "-l${1}"
   :path_flag: "-L ${1}"
-  :system: []    # for example, you might list 'm' to grab the math library
+  :system: 
+    - m
   :test: []
   :release: []
 

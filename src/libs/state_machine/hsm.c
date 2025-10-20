@@ -4,7 +4,6 @@
 #include <stdlib.h>
 
 #include "assert.h"
-#include "stdio.h"
 
 static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestor_list, hsm_state_t const *const source,
                                    hsm_state_t const *const ancestor);
