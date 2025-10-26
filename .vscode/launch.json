@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/src/libs/state_machine/build/test/out/test_hsm/test_hsm.out",
+            "program": "${workspaceFolder}/src/utils/message_queue/build/test/out/test_msgq/test_msgq.out",
             "args": [],
             "stopAtEntry": true,
             "cwd": "${fileDirname}",

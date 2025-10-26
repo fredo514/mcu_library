@@ -22,6 +22,15 @@ typedef struct {
    uint8_t data[];
 } msg_t;
 
+static uint16_t Copy_To_Queue(msgq_t* const queue, uint8_t const* const pSrc, uint16_t const start, uint8_t const len);
+static uint16_t Copy_From_Queue(msgq_t* const queue, uint8_t* const pDest, uint16_t const start, uint8_t const len);
+
+/**
+ * @brief Allocate a message queue instance and its buffer on the heap.
+ * @note Msgq_Init must be called on the instance before use
+ *
+ * @return Pointer to the created instance.
+ */
 msgq_t* Msgq_Create(uint16_t const size) {
    assert(IS_POWER_OF_2(size));
 
@@ -36,101 +45,193 @@ msgq_t* Msgq_Create(uint16_t const size) {
    return inst;
 }
 
+/**
+ * @brief Initialize a message queue.
+ *
+ * @param[inout] queue   queue object.
+ *
+ * @return None
+ */
 void Msgq_Init(msgq_t* const queue) {
    assert(queue);
 
    queue->head = 0;
    queue->tail = 0;
+
+   memset(queue->buffer, 0, queue->capacity);
 }
 
-bool Msgq_Push(msgq_t* const queue, void* const src, uint8_t const msg_len) {
+/**
+ * @brief Pushes the provided message to the queue if there is enough space left.
+ *
+ * @param[inout] queue   Message queue object.
+ * @param[in] pSrc Message to store source buffer.
+ * @param msg_len length of message to store.
+ *
+ * @return True if stored, false otherwise
+ */
+bool Msgq_Push(msgq_t* const queue, void* const pSrc, uint8_t const msg_len) {
    assert(queue);
-   assert(src);
+   assert(pSrc);
    assert(msg_len <= MSGQ_MAX_MSG_SIZE);
 
-   uint16_t start = 0;
-   msg_t* msg_slot = NULL;
+   uint16_t is_ready_pos = 0;
+   uint16_t curr_idx = 0;
    bool part = false;
 
-   // lock interrupts
-   CRITICAL_SECTION(CORE_IRQ_ALL) {
-      // make sure there is enough space left
-      uint16_t space_left;
-      if (queue->tail > queue->head) {
-         space_left = queue->tail - queue->head;
-      } else {
-         space_left = queue->capacity - (queue->head - queue->tail);
-      }
-      if (msg_len > space_left) {
-         // todo restore interrupts
-         return false;
-      }
+   // lock interrupts to reserve a memory block atomically
+   bool int_state = Core_Interrupts_SaveAndDisable(CORE_IRQ_ALL);
 
-      // reserve block
-      start = queue->head;
-      queue->head += sizeof(msg_t) + msg_len;
-      // wrap
-      queue->head &= queue->capacity - 1;
-      if (queue->head < start) {
-         part = true;
-      }
-
-      // mark not ready
-      msg_slot = (msg_t*)&(queue->buffer[start]);
-      msg_slot->is_ready = false;
+   // make sure there is enough space left
+   uint16_t space_left;
+   // empty?
+   if (queue->tail == queue->head) {
+      space_left = queue->capacity;
+   }
+   // are we crossing wrap boundary?
+   else if (queue->tail >= queue->head) {
+      space_left = queue->tail - queue->head;
+   } else {
+      space_left = queue->capacity - (queue->head - queue->tail);
    }
 
-   // copy data with wrap
-   for (size_t i = 0; i < sizeof(msg_slot->len); ++i) {
-      queue->buffer[(start + sizeof(msg_slot->is_ready) + i) & (queue->capacity - 1)] = ((uint8_t*)msg_len)[i];
+   if ((msg_len + sizeof(msg_t)) > space_left) {
+      // not enough space left
+      Core_Interrupts_Restore(CORE_IRQ_ALL, int_state);
+      return false;
    }
-   start += sizeof(msg_slot->len);
-   start &= queue->capacity - 1;
 
-   for (uint8_t i = 0; i < msg_len; ++i) {
-      queue->buffer[(start + i) & (queue->capacity - 1)] = ((uint8_t*)src)[i];
-   }
+   // reserve block
+   is_ready_pos = queue->head;
+   queue->head += sizeof(msg_t) + msg_len;
+   // wrap
+   queue->head &= queue->capacity - 1;
+
+   // mark not ready
+   const bool not_ready = false;
+   curr_idx = Copy_To_Queue(queue, (uint8_t*)&not_ready, is_ready_pos, sizeof(not_ready));
+
+   Core_Interrupts_Restore(CORE_IRQ_ALL, int_state);
+
+   // copy message len
+   curr_idx = Copy_To_Queue(queue, (uint8_t*)&msg_len, curr_idx, sizeof(msg_len));
+
+   // copy data
+   (void)Copy_To_Queue(queue, pSrc, curr_idx, msg_len);
 
    // mark ready
-   msg_slot->is_ready = true;
+   queue->buffer[is_ready_pos] = true;
 
    return true;
 }
 
-bool Msgq_Pop(msgq_t* const queue, void* dest, uint8_t const dest_len, uint8_t* msg_len) {
+/**
+ * @brief Pop the oldest message from the queue to provided buffer.
+ *
+ * @param[inout] queue   Message queue object.
+ * @param[out] pDest Destination buffer.
+ * @param dest_len length of destination buffer (for overflow checks).
+ * @param[out] pMsg_len popped message length.
+ *
+ * @return True if message popped, false otherwise
+ */
+bool Msgq_Pop(msgq_t* const queue, void* pDest, uint8_t const dest_len, uint8_t* pMsg_len) {
+   assert(queue);
+   assert(pDest);
+   assert(pMsg_len);
+
    // make sure queue not empty
    if (!Msgq_Is_Msg_Available(queue)) {
       return false;
    }
 
-   uint8_t start = queue->tail;
-   msg_t* msg_slot = (msg_t*)&(queue->buffer[start]);
+   uint16_t curr_idx = queue->tail;
 
-   // make sure msg at tail is ready
-   assert(msg_slot->is_ready);
+   // get message metadata
+   bool is_ready;
+   curr_idx = Copy_From_Queue(queue, (uint8_t*)&is_ready, curr_idx, sizeof(is_ready));
 
-   // TODO: handle wrap
-   for (size_t i = 0; i < len; ++i) {
-      ((uint8_t*)&dest)[i] = queue->buffer[(start + sizeof(msg_slot->is_ready) + i) & (queue->capacity - 1)];
-   }
+   uint8_t msg_len;
+   curr_idx = Copy_From_Queue(queue, (uint8_t*)&msg_len, curr_idx, sizeof(msg_len));
 
-   uint8_t len = msg_slot->len;
    // make sure dest buffer is long enough
-   assert(dest_len >= len);
+   assert(dest_len >= msg_len);
 
-   // copy data with wrap
-   // TODO: handle wrap
-   memcpy(dest, msg_slot->data, len);
-   *msg_len = len;
-
-   // advance tail
-   queue->tail += sizeof(msg_t) + len;
-   // wrap
-   queue->tail &= queue->capacity - 1;
+   // copy data
+   queue->tail = Copy_From_Queue(queue, pDest, curr_idx, msg_len);
+   *pMsg_len = msg_len;
 
    return true;
 }
 
+/**
+ * @brief Checks whether a message is availbale in the queue.
+ *
+ * @param[in] queue   Message queue object.
+ *
+ * @return True if message available, false otherwise
+ */
 bool Msgq_Is_Msg_Available(msgq_t* const queue) {
-   return ((queue->head != queue->tail) && (((msg_t*)&(queue->buffer[queue->tail]))->is_ready));
+   assert(queue);
+
+   bool is_not_empty = queue->head != queue->tail;
+   bool msg_is_ready = queue->buffer[queue->tail] == true;
+
+   return (is_not_empty && msg_is_ready);
+}
+
+/**
+ * @brief Copy the provided buffer to the message queue circular buffer while handling wrap.
+ *
+ * @param[inout] queue   Message queue object.
+ * @param[in] pSrc Source buffer.
+ * @param start Initial index to start the copy from
+ * @param len number of bytes to copy.
+ *
+ * @return Advanced circular buffer index
+ */
+static uint16_t Copy_To_Queue(msgq_t* const queue, uint8_t const* const pSrc, uint16_t const start, uint8_t const len) {
+   // find how many butes left until end of buffer
+   uint16_t remaining = queue->capacity - start;
+
+   // check if crossing wrap boundary
+   if (len <= remaining) {
+      // no, no need to split
+      memcpy(&queue->buffer[start], pSrc, len);
+   } else {
+      // yes, split copy in 2 parts
+      memcpy(&queue->buffer[start], pSrc, remaining);
+      memcpy(&queue->buffer[0], pSrc + remaining, len - remaining);
+   }
+
+   // advance index with wrap
+   return (start + len) & (queue->capacity - 1);
+}
+
+/**
+ * @brief Copy the a number of bytes from the queue circular buffer to the provided buffer while handling wrap.
+ *
+ * @param[inout] queue   Message queue object.
+ * @param[in] pDest Destination buffer.
+ * @param start Initial index to start the copy from
+ * @param len number of bytes to copy.
+ *
+ * @return Advanced circular buffer index
+ */
+static uint16_t Copy_From_Queue(msgq_t* const queue, uint8_t* const pDest, uint16_t const start, uint8_t const len) {
+   // find how many butes left until end of buffer
+   uint16_t remaining = queue->capacity - start;
+
+   // check if crossing wrap boundary
+   if (len <= remaining) {
+      // no, no need to split
+      memcpy(pDest, &queue->buffer[start], len);
+   } else {
+      // yes, split copy in 2 parts
+      memcpy(pDest, &queue->buffer[start], remaining);
+      memcpy(pDest + remaining, queue->buffer[0], len - remaining);
+   }
+
+   // advance index with wrap
+   return (start + len) & (queue->capacity - 1);
 }

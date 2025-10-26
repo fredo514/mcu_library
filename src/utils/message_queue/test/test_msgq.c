@@ -5,11 +5,14 @@
 #include "msgq.h"
 #include "unity.h"
 
-#define QUEUE_SIZE (256)
+#define QUEUE_SIZE (1024)
 
 msgq_t* pQueue;
 
 void setUp(void) {
+   Core_Interrupts_SaveAndDisable_IgnoreAndReturn(false);
+   Core_Interrupts_Restore_Ignore();
+
    pQueue = Msgq_Create(QUEUE_SIZE);
    Msgq_Init(pQueue);
 
@@ -79,8 +82,11 @@ void test_push_2_retrieve_in_order(void) {
 
 void test_push_not_enough_space_left(void) {
    // push a message that almost fills the queue
-   char msg_in[QUEUE_SIZE - sizeof(float) + 1];
+   uint8_t msg_in[(MSGQ_MAX_MSG_SIZE - 2)];
    TEST_ASSERT_TRUE(Msgq_Push(pQueue, &msg_in, sizeof(msg_in)));
+   TEST_ASSERT_TRUE(Msgq_Push(pQueue, &msg_in, sizeof(msg_in)));
+   TEST_ASSERT_TRUE(Msgq_Push(pQueue, &msg_in, sizeof(msg_in)));
+   TEST_ASSERT_TRUE(Msgq_Push(pQueue, &msg_in, sizeof(msg_in) - 1));
 
    // try push another one, should fail
    float another_msg_in = 42.0f;
@@ -90,12 +96,12 @@ void test_push_not_enough_space_left(void) {
 void test_push_wrap(void) {
    // fill queue bu leave at least 1 byte out
    uint8_t msg_in = 0;
-   for (size_t i = 0; i < (QUEUE_SIZE / 3); ++i) {
-      msg_in = i;
+   for (size_t i = 0; i < (QUEUE_SIZE / (2 + sizeof(msg_in))); ++i) {
+      msg_in = (uint8_t)i;
       TEST_ASSERT_TRUE(Msgq_Push(pQueue, &msg_in, sizeof(msg_in)));
    }
 
-   // pop 2 to leave 4 bytes free
+   // pop 2 to leave 7 bytes free
    uint8_t msg_out;
    uint8_t msg_len;
    TEST_ASSERT_TRUE(Msgq_Pop(pQueue, &msg_out, sizeof(msg_out), &msg_len));
@@ -116,9 +122,9 @@ void test_push_wrap(void) {
    TEST_ASSERT_TRUE(Msgq_Is_Msg_Available(pQueue));
 
    // empty queue of filler data
-   for (size_t i = 2; i < (QUEUE_SIZE / 3); ++i) {
+   for (size_t i = 2; i < (QUEUE_SIZE / (2 + sizeof(msg_in))); ++i) {
       TEST_ASSERT_TRUE(Msgq_Pop(pQueue, &msg_out, sizeof(msg_out), &msg_len));
-      TEST_ASSERT_EQUAL(i, msg_out);
+      TEST_ASSERT_EQUAL((uint8_t)i, msg_out);
       TEST_ASSERT_EQUAL(sizeof(msg_in), msg_len);
    }
 
@@ -149,9 +155,8 @@ void test_pop_empty(void) {
 
 void test_Is_Msg_Available_exactly_full(void) {
    // fill queue
-   uint16_t msg_in = 0;
+   uint8_t msg_in[MSGQ_MAX_MSG_SIZE - 2];
    for (size_t i = 0; i < (QUEUE_SIZE / 2 + sizeof(msg_in)); ++i) {
-      msg_in = i;
       TEST_ASSERT_TRUE(Msgq_Push(pQueue, &msg_in, sizeof(msg_in)));
    }
 

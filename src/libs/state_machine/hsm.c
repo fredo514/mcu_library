@@ -88,7 +88,7 @@ void Hsm_Init(hsm_t *const sm, hsm_state_t const *const pInitial_state) {
 /**
  * @brief Feeds the given event to the current state or its ancestors and handles resulting state transitions.
  *
- *  @param[inout] sm   State-machine object.
+ * @param[inout] sm   State-machine object.
  * @param event Event to process.
  *
  * @return None
