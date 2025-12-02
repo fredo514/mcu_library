@@ -1,8 +1,14 @@
-//#define PID_SIMPLE_ERROR_CB
+#ifndef PID_PRIV_H
+#define PID_PRIV_H
+
+#include <stdint.h>
 
 #define PID_USE_FLOAT
+
 #ifdef PID_USE_FLOAT
-typedef PID_DATA_t float;
+typedef float pid_data_t;
 #else
-typedef PID_DATA_t uint32_t;
+typedef uint32_t pid_data_t; // or fixed‐point
 #endif
+
+#endif PID_PRIV_H

@@ -1,45 +1,17 @@
 #include "pid.h"
+#include "assert.h"
 
-struct PID_CTX {
-    PID_DATA_t last_output;
-    PID_DATA_t setpoint;
-    
-    PID_DATA_t p_gain;
-    PID_DATA_t i_gain;
-    PID_DATA_t d_gain; 
-    PID_ACTION_t action;
-    PID_MODE_t mode;
-    float p_on_m_weight;
+static pid_data_t Simple_Error(pid_data_t setpoint, pid_data_t input);
+static inline pid_data_t Clamp(pid_t * const pid, pid_data_t const val);
 
-    // for integral
-    PID_DATA_t i_term;
-    PID_DATA_t last_error;
-
-    // for derivative
-    PID_DATA_t last_input;
-
-    // for windup Clamping
-    PID_DATA_t max_output;
-    PID_DATA_t min_output;
-
-    PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input);
-};
-
-static PID_DATA_t Simple_Error(PID_DATA_t setpoint, PID_DATA_t input);
-static PID_DATA_t Clamp(PID_h pid, PID_DATA_t val);
-
-PID_h Pid_Create(void) {
-    return calloc(1, sizeof(struct PID_CTX));
-}
-
-ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
-    ASSERT(pid);
-    ASSERT(config->kp >= 0);
-    ASSERT(config->ki >= 0);
-    ASSERT(config->kd >= 0);
-    ASSERT(config->min_output < config->max_output); 
+void Pid_Init(pid_t * const pid,  pid_config_t const * const config) {
+    assert(pid);
+    assert(config->kp >= 0);
+    assert(config->ki >= 0);
+    assert(config->kd >= 0);
+    assert(config->min_output < config->max_output); 
     if (config->kd > 0) {
-        ASSERT(config->deriv_filter);
+        assert(config->deriv_filter);
     }
 
     pid->action = config->action;
@@ -55,12 +27,13 @@ ERROR_t Pid_Init(PID_h pid, PID_CONFIG_t const * const config) {
     }
 }
 
-ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, PID_DATA_t alpha, float p_on_m_weight) {
-    ASSERT(kp >= 0);
-    ASSERT(ki >= 0);
-    ASSERT(kd >= 0);
-    ASSERT(p_on_m_weight >= 0);
-    ASSERT(p_on_m_weight <= 1);
+void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, pid_data_t const kd, pid_data_t const alpha, float const p_on_m_weight) {
+    assert(pid);
+    assert(kp >= 0);
+    assert(ki >= 0);
+    assert(kd >= 0);
+    assert(p_on_m_weight >= 0);
+    assert(p_on_m_weight <= 1);
 
     pid->p_gain = kp;
     pid->i_gain = ki;
@@ -68,12 +41,10 @@ ERROR_t Pid_Gain_Set(PID_h pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, PID
     pid->alpha = alpha;
 
     pid->p_on_m_weight = p_on_m_weight;
-    
-    return NO_ERROR;
 }
 
-ERROR_CODE_t Pid_Error_Callback_Register(PID_h pid, PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input)) {
-    ASSERT(pid);
+error_t Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const error_calc_cb) {
+    assert(pid);
 
     if (error_calc_cb) {
         pid->error_calc_cb = error_calc_cb;
@@ -85,15 +56,17 @@ ERROR_CODE_t Pid_Error_Callback_Register(PID_h pid, PID_DATA_t (*error_calc_cb)(
     return NO_ERROR;
 }
 
-PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
-    PID_DATA_t output = 0;
+pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
+    assert(pid);
+
+    pid_data_t output = 0;
     
     if (pid->mode == PID_MODE_ACTIVE) {
-        PID_DATA_t p_on_m_term = 0;
+        pid_data_t p_on_m_term = 0;
         
         // TODO: add optional setpoint 1st-order filter
-        PID_DATA_t error = pid->error_calc_cb(pid->setpoint, input);
-        PID_DATA_t input_deriv = input - pid->last_input;
+        pid_data_t error = pid->error_calc_cb(pid->setpoint, input);
+        pid_data_t input_deriv = input - pid->last_input;
 
         if (pid->action == PID_ACTION_REVERSE) {
             input_deriv = -input_deriv;
@@ -101,7 +74,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         }
 
         // Calculate proportional terms
-        PID_DATA_t p_term = 0;
+        pid_data_t p_term = 0;
         if (pid->p_on_m_weight > 0) {
             // In proportional-on-measurement mode, the proportional gain resists change
             p_on_m_term = pid->p_on_m_weight * pid->p_gain * input_deriv;
@@ -118,21 +91,21 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
         // Calculate derivative term 
         // using derivative on measurement to avoid derivative kick
         // low-pass filter is NOT optional. It is necessary to prevent output chatter due to input noise.
-        PID_DATA_t d_term = pid->deriv_filter(pid->d_gain * input_deriv, pid->last_d_term);
+        pid_data_t d_term = pid->deriv_filter(pid->d_gain * input_deriv, pid->last_d_term);
         // TODO: add 1st-order filter with filter time = Td/10 to derivative term calculation
         // pid->last_deriv = pid->last_deriv + (pid->alpha_deriv * ((pid->d_gain * input_deriv) - pid->last_deriv)); // TODO: use callback to provide own filter?
         // could also use a small FIR filter such as: (TODO, replace with Fir_Filt instance)
         // pid->last_deriv[0] = pid->d_gain * (input_deriv - last_deriv[2] + 3*(last_deriv[0] - last_deriv[1])) / 6;
 
         // Calculate integral term
-        PID_DATA_t i_term_clamped = Clamp(pid->i_term, pid->min_output - (p_term + d_term), pid->max_output - (p_term + d_term));
+        pid_data_t i_term_clamped = Clamp(pid->i_term, pid->min_output - (p_term + d_term), pid->max_output - (p_term + d_term));
 
         // Calculate desired output
         // d_term is negative due to using derivative on measurement
-        PID_DATA_t output_desired = p_term + i_term_clamped - d_term;
+        pid_data_t output_desired = p_term + i_term_clamped - d_term;
 
         // Clamp to controller limits
-        PID_DATA_t output_saturated = Clamp(output_desired, pid->min_output, pid->max_output);
+        pid_data_t output_saturated = Clamp(output_desired, pid->min_output, pid->max_output);
         // CO filter
         // Normally not needed, but could be rate-limiter, actuator limits, lowpass, etc
         if (pid->output_filter) {
@@ -143,7 +116,7 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
 
         // Update intergral sum at the end for faster response time
         // output is saturated and integral wants to grow
-        if ((output_saturated != output_desired) && ((error ^ output_desired) >= 0)) {
+        if ((output_saturated != output_desired) && ((error * output_desired) >= 0)) {
             // clamp integral
             integral_error = 0;
         }
@@ -173,18 +146,24 @@ PID_DATA_t Pid_Update(PID_h pid, PID_DATA_t input) {
     return output;
 }
 
-PID_DATA_t Pid_Output_Get(PID_h pid) {
+pid_data_t Pid_Output_Get(pid_t * const pid) {
+    assert(pid);
+
     return pid->last_output;
 }
 
-ERROR_CODE_t Pid_Override(PID_h pid, PID_DATA_t output) {
+pid_data_t Pid_Override(pid_t * const pid) {
+    assert(pid);
+
     pid->mode = PID_MODE_OVERRIDE;
     pid->last_output = output;
 
-    return NO_ERROR;
+    return pid->last_output;
 }
 
-ERROR_CODE_t Pid_Resume(PID_h pid) {
+void Pid_Resume(pid_t * const pid) {
+    assert(pid);
+    
     // need to preload intergral term to avoid bump when exiting override mode
     if (pid->mode == PID_MODE_OVERRIDE) {
         pid->i_term = pid->last_output;
@@ -192,25 +171,36 @@ ERROR_CODE_t Pid_Resume(PID_h pid) {
     }
     
     pid->mode = PID_MODE_ACTIVE;
-
-    return NO_ERROR;
 }
 
-PID_MODE_t Pid_Mode_Get(PID_h pid) {
+pid_mode_t Pid_Mode_Get(pid_t * const pid) {
+    assert(pid);
+    
     return pid->mode;
 }
 
-ERROR_CODE_t Pid_Action_Set(PID_h pid, PID_ACTION_t action) {
+void Pid_Action_Set(pid_t * const pid, pid_action_t const action) {
+    assert(pid);
+    assert(action < PID_ACTION_MAX);
+    
     pid->action = action;
-
-    return NO_ERROR;
 }
 
-static PID_DATA_t Simple_Error(PID_DATA_t setpoint, PID_DATA_t input) {
+error_t Pid_Output_Limits_Set(pid_t * const pid, pid_data_t const min_output, pid_data_t const max_output) {
+    assert(pid);
+}
+
+error_t Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint){
+    assert(pid);
+}
+
+static pid_data_t Simple_Error(pid_data_t setpoint, pid_data_t input) {
     return setpoint - input;
 }
 
-static inline PID_DATA_t Clamp(PID_h pid, PID_DATA_t const val) {
+static inline pid_data_t Clamp(pid_t * const pid, pid_data_t const val) {
+    assert(pid);
+    
     if (val > pid->max_output) {
         return pid->max_output;
     }

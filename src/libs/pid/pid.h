@@ -3,6 +3,7 @@
 
 #include "pid_config.h"
 #include "error.h"
+#include "pid_priv.h"
 
 // TODO: Implement additional features such as feed-forward, reset tieback, integer math,
 // alternative forms, velocity control, and setpoint ramping for extended use cases.
@@ -11,39 +12,37 @@
 typedef enum {
     PID_MODE_ACTIVE = 0,
     PID_MODE_OVERRIDE,
-} PID_MODE_t;
+    PID_MODE_MAX
+} pid_mode_t;
 
 /** Enum for defining action direction */
 typedef enum {
     PID_ACTION_DIRECT = 0,
     PID_ACTION_REVERSE,
-} PID_ACTION_t;
+    PID_ACTION_MAX
+} pid_action_t;
 
 /** PID Controller Configuration */
 typedef struct {
-    PID_DATA_t kp;               ///< Proportional gain
-    PID_DATA_t ki;               ///< Integral gain
-    PID_DATA_t kd;               ///< Derivative gain
-    PID_DATA_t alpha_deriv;      ///< Filter coefficient for derivative term
-    PID_DATA_t kaw               ///< Anti-windup gain
-    PID_DATA_t max_output;       ///< Maximum output value for saturation
-    PID_DATA_t min_output;       ///< Minimum output value for saturation
-    PID_ACTION_t action;         ///< Control action (direct or reverse)
+    pid_data_t kp;               ///< Proportional gain
+    pid_data_t ki;               ///< Integral gain
+    pid_data_t kd;               ///< Derivative gain
+    pid_data_t alpha_deriv;      ///< Filter coefficient for derivative term
+    pid_data_t kaw               ///< Anti-windup gain
+    pid_data_t max_output;       ///< Maximum output value for saturation
+    pid_data_t min_output;       ///< Minimum output value for saturation
+    pid_action_t action;         ///< Control action (direct or reverse)
     float proportional_on_measurement_weight; ///< Weighting for P action on measurement
-    PID_MODE_t mode;             ///< Current mode of PID (active/override)
+    pid_mode_t mode;             ///< Current mode of PID (active/override)
     
     /** Optional callback for error calculation */
-    PID_DATA_t (*calculate_error_cb)(PID_DATA_t setpoint, PID_DATA_t input);
-} PID_CONFIG_t;
+    pid_data_t (*calculate_error_cb)(pid_data_t setpoint, pid_data_t input);
+} pid_config_t;
 
 /** Handle for opaque PID context */
-typedef struct PID_CONTEXT const * const PID_HANDLE_t;
+typedef struct pid_ctx pid_t;
 
-/** 
- * @brief Creates a new PID controller instance.
- * @return A handle to the PID instance, or NULL on failure.
- */
-PID_HANDLE_t PID_Create(void);
+typedef pid_data_t (*pid_error_calc_cb_t)(pid_data_t setpoint, pid_data_t input)
 
 /** 
  * @brief Initializes the PID controller with configuration parameters.
@@ -51,7 +50,7 @@ PID_HANDLE_t PID_Create(void);
  * @param config Configuration parameters for PID.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_Init(PID_HANDLE_t pid, const PID_CONFIG_t* config);
+void Pid_Init(pid_t * const pid,  pid_config_t const * const config);
 
 /** 
  * @brief Registers a custom error calculation callback.
@@ -59,7 +58,7 @@ ERROR_CODE_t PID_Init(PID_HANDLE_t pid, const PID_CONFIG_t* config);
  * @param error_calc_cb Pointer to the error calculation function.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_RegisterErrorCalculation(PID_HANDLE_t pid, PID_DATA_t (*error_calc_cb)(PID_DATA_t setpoint, PID_DATA_t input));
+error_t Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const error_calc_cb);
 
 /** 
  * @brief Sets the PID gains and proportional-on-measurement weighting.
@@ -70,7 +69,7 @@ ERROR_CODE_t PID_RegisterErrorCalculation(PID_HANDLE_t pid, PID_DATA_t (*error_c
  * @param p_on_m Weighting for proportional action on measurement.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_SetGains(PID_HANDLE_t pid, PID_DATA_t kp, PID_DATA_t ki, PID_DATA_t kd, float p_on_m_weight);
+void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, pid_data_t const kd, pid_data_t const alpha, float const p_on_m_weight);
 
 /** 
  * @brief Sets the PID setpoint.
@@ -78,7 +77,7 @@ ERROR_CODE_t PID_SetGains(PID_HANDLE_t pid, PID_DATA_t kp, PID_DATA_t ki, PID_DA
  * @param setpoint Desired setpoint value.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_SetSetpoint(PID_HANDLE_t pid, PID_DATA_t setpoint);
+error_t Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint);
 
 /** 
  * @brief Overrides the PID output to a specific value.
@@ -86,21 +85,21 @@ ERROR_CODE_t PID_SetSetpoint(PID_HANDLE_t pid, PID_DATA_t setpoint);
  * @param output The override output value.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_OverrideOutput(PID_HANDLE_t pid, PID_DATA_t output);
+pid_data_t Pid_Override(pid_t * const pid);
 
 /** 
  * @brief Resumes the PID controller from override mode.
  * @param pid Handle to the PID instance.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_Resume(PID_HANDLE_t pid);
+void Pid_Resume(pid_t * const pid);
 
 /** 
  * @brief Gets the current mode of the PID controller.
  * @param pid Handle to the PID instance.
  * @return The current PID mode.
  */
-PID_MODE_t PID_GetMode(PID_HANDLE_t pid);
+pid_mode_t Pid_Mode_Get(pid_t * const pid);
 
 /** 
  * @brief Sets the control action (direct or reverse).
@@ -108,7 +107,7 @@ PID_MODE_t PID_GetMode(PID_HANDLE_t pid);
  * @param action Control action setting.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_SetAction(PID_HANDLE_t pid, PID_ACTION_t action);
+error_t Pid_Action_Set(pid_t * const pid, pid_action_t const action);
 
 /** 
  * @brief Sets the control output limits for saturation.
@@ -117,7 +116,7 @@ ERROR_CODE_t PID_SetAction(PID_HANDLE_t pid, PID_ACTION_t action);
  * @param max_output Maximum allowed control output.
  * @return Error code indicating success or failure.
  */
-ERROR_CODE_t PID_SetOutputLimits(PID_HANDLE_t pid, PID_DATA_t min_output, PID_DATA_t max_output);
+error_t Pid_Output_Limits_Set(pid_t * const pid, pid_data_t const min_output, pid_data_t const max_output);
 
 /** 
  * @brief Updates the PID output based on the input value.
@@ -125,13 +124,13 @@ ERROR_CODE_t PID_SetOutputLimits(PID_HANDLE_t pid, PID_DATA_t min_output, PID_DA
  * @param input Current input value for PID calculation.
  * @return The computed PID output.
  */
-PID_DATA_t PID_Update(PID_HANDLE_t pid, PID_DATA_t input);
+pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input);
 
 /** 
  * @brief Retrieves the current output of the PID controller.
  * @param pid Handle to the PID instance.
  * @return The current output value.
  */
-PID_DATA_t PID_GetOutput(PID_HANDLE_t pid);
+pid_data_t Pid_Output_Get(pid_t * const pid);
 
 #endif // PID_CONTROLLER_H
