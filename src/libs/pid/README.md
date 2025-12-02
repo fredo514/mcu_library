@@ -21,6 +21,8 @@ PI is sufficient most of the time (Kd=0, a=0).
 PID can sometimes help get marginally better performance when tuning aggressively.
 CO filter is rarely needed. Only potential for benefit in loops with noise and/or delicate mechanical actuators.
 
+kp, ki, kd are already discretized (e.g. ki = K * Ts / Ti, kd = K * Td / Ts) and Ts is assumed constant.
+
 ## Anti-windup Tuning
 A common and effective starting point is:
 ```math
