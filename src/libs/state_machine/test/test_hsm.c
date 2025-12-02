@@ -87,15 +87,15 @@ static hsm_status_t A_Handler(hsm_t* const pSm, hsm_sig_t const signal) {
          break;
 
       case A1_SIG:
-         return HSM_TRAN(&state_a1);
+         return Hsm_Transition(pSm, &state_a1);
          break;
 
       case A31_SIG:
-         return HSM_TRAN(&state_a31);
+         return Hsm_Transition(pSm, &state_a31);
          break;
 
       case B_SIG:
-         return HSM_TRAN(&state_b);
+         return Hsm_Transition(pSm, &state_b);
          break;
    }
 
@@ -119,27 +119,27 @@ static hsm_status_t A1_Handler(hsm_t* const pSm, hsm_sig_t const signal) {
          break;
 
       case A_SIG:
-         return HSM_TRAN(&state_a);
+         return Hsm_Transition(pSm, &state_a);
          break;
 
       case A1_SIG:
-         return HSM_TRAN(&state_a1);
+         return Hsm_Transition(pSm, &state_a1);
          break;
 
       case A2_SIG:
-         return HSM_TRAN(&state_a2);
+         return Hsm_Transition(pSm, &state_a2);
          break;
 
       case A3_SIG:
-         return HSM_TRAN(&state_a3);
+         return Hsm_Transition(pSm, &state_a3);
          break;
 
       case A31_SIG:
-         return HSM_TRAN(&state_a31);
+         return Hsm_Transition(pSm, &state_a31);
          break;
 
       case B1_SIG:
-         return HSM_TRAN(&state_b1);
+         return Hsm_Transition(pSm, &state_b1);
          break;
    }
 
@@ -163,7 +163,7 @@ static hsm_status_t A3_Handler(hsm_t* const pSm, hsm_sig_t const signal) {
 
    switch (signal) {
       case HSM_SIG_INIT:
-         return HSM_TRAN(&state_a31);
+         return Hsm_Transition(pSm, &state_a31);
          break;
    }
 
@@ -175,7 +175,7 @@ static hsm_status_t A31_Handler(hsm_t* const pSm, hsm_sig_t const signal) {
 
    switch (signal) {
       case A_SIG:
-         return HSM_TRAN(&state_a);
+         return Hsm_Transition(pSm, &state_a);
          break;
    }
 

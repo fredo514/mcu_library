@@ -4,9 +4,10 @@
 #include <stdlib.h>
 
 #include "assert.h"
+#include "error.h"
 
-static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestor_list, hsm_state_t const *const source,
-                                   hsm_state_t const *const ancestor);
+static uint8_t Build_Ancestor_List(hsm_state_t * const * const ancestors_list, hsm_state_t const *const source,
+                                   hsm_state_t const *const ancestor)
 static void Exit_Up_To(hsm_t *const sm, hsm_state_t const *const source, hsm_state_t const *const ancestor);
 static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_state_t const *const ancestor);
 static hsm_state_t *Find_Lca(hsm_state_t const *const source, hsm_state_t const *const target);
@@ -48,19 +49,6 @@ static hsm_status_t Top_Handler(hsm_t *const sm, hsm_sig_t const signal) {
 }
 
 /**
- * @brief Allocate a state-machine instance on the heap.
- * @note Hsm_Init must be called on the instance before use
- *
- * @return Pointer to the created instance.
- */
-hsm_t *Hsm_Create(void) {
-   hsm_t *inst = calloc(1, sizeof(hsm_t));
-   assert(inst);
-
-   return inst;
-}
-
-/**
  * @brief Initialize a state machine. Posts entry events to the hierarchy of state from top to the given initial state
  * then set the current state to the given initial state.
  *
@@ -97,6 +85,8 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
    assert(sm);
 
    hsm_status_t ret = HSM_STATUS_UNHANDLED;
+
+   assert(sm->curr_state);
    hsm_state_t *state = sm->curr_state;
    assert(state->handler);
 
@@ -167,6 +157,15 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
    }
 }
 
+hsm_status_t Hsm_Transition(hsm_t * const sm, hsm_state_t const * const target)
+{
+   assert(sm);
+   assert(target); 
+   
+   sm->target_state = target;
+    return HSM_STATUS_TRAN;
+}
+
 /**
  * @brief Return the current state-machine state.
  *
@@ -175,6 +174,8 @@ void Hsm_Dispatch(hsm_t *const sm, hsm_sig_t const signal) {
  * @return Current state.
  */
 hsm_state_t *Hsm_State_Get(hsm_t const *const sm) {
+   assert(sm);
+   
    return sm->curr_state;
 }
 
@@ -183,12 +184,15 @@ hsm_state_t *Hsm_State_Get(hsm_t const *const sm) {
  * @note ONLY FOR TESTING
  *
  * @param[in] sm   State-machine object.
- * @param[in] pTarget_state   Target state.
+ * @param[in] target_state   Target state.
  *
  * @return None
  */
-void Hsm_State_Set(hsm_t *const sm, hsm_state_t *const pTarget_state) {
-   sm->curr_state = pTarget_state;
+void Hsm_State_Set(hsm_t *const sm, hsm_state_t *const target_state) {
+   assert(sm);
+   assert(target_state);
+   
+   sm->curr_state = target_state;
 
    // TODO: post entry?
 }
@@ -203,7 +207,7 @@ void Hsm_State_Set(hsm_t *const sm, hsm_state_t *const pTarget_state) {
  *
  * @return number of ancestors populated in array.
  */
-static uint8_t Build_Ancestor_List(hsm_state_t const **const ancestors_list, hsm_state_t const *const source,
+static uint8_t Build_Ancestor_List(hsm_state_t * const * const ancestors_list, hsm_state_t const *const source,
                                    hsm_state_t const *const ancestor) {
    uint8_t depth = 0;
    if (source != ancestor) {
@@ -277,6 +281,9 @@ static void Enter_Down_To(hsm_t *const sm, hsm_state_t const *const target, hsm_
  * @return least common ancestor
  */
 static hsm_state_t *Find_Lca(hsm_state_t const *const source, hsm_state_t const *const target) {
+   assert(source);
+   assert(target);
+   
    // note: will always at least find top in common
    // starting from source of transition up to top
    hsm_state_t *tentative_lca_source = source;
@@ -286,9 +293,11 @@ static hsm_state_t *Find_Lca(hsm_state_t const *const source, hsm_state_t const 
       if (tentative_lca_target == &hsm_top_state) {
          // reached target top, climb source ancestors and start again
          tentative_lca_target = target;
+         assert(tentative_lca_source->parent != NULL);
          tentative_lca_source = tentative_lca_source->parent;
       } else {
          // climb target ancestors
+         assert(tentative_lca_source->parent != NULL);
          tentative_lca_target = tentative_lca_target->parent;
       }
    }

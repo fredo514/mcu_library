@@ -30,8 +30,8 @@
 extern "C" {
 #endif
 
-#include "error.h"
 #include "stdbool.h"
+#include "hsm_priv.h"
 
 // -----------------------------------------------------------------------------
 // Public Constants
@@ -44,15 +44,6 @@ extern "C" {
 // -----------------------------------------------------------------------------
 // Public Types
 // -----------------------------------------------------------------------------
-
-/**
- * @brief Macro for returning a transition status.
- */
-#define HSM_TRAN(target_state_ptr)           \
-   ({                                        \
-      sm->target_state = (target_state_ptr); \
-      HSM_STATUS_TRAN;                       \
-   })
 
 /**
  * @brief Reserved event signals.
@@ -102,9 +93,6 @@ typedef struct hsm_state {
    hsm_statehandler_t const handler;  // state handler
 } hsm_state_t;
 
-// needs to keep this here as HSM_TRAN accesses guts
-#include "hsm_priv.h"
-
 /**
  * @brief All state machines must have the top state as their ultimate ancestor.
  */
@@ -114,11 +102,12 @@ extern hsm_state_t hsm_top_state;
 // Public Functions
 // -----------------------------------------------------------------------------
 
-hsm_t* Hsm_Create(void);
 void Hsm_Init(hsm_t* const sm, hsm_state_t const* const initial_state);
 
 // void Hsm_Dispatch(hsm_t* const sm, hsm_event_t const * const event);
 void Hsm_Dispatch(hsm_t* const sm, hsm_sig_t const signal);
+
+hsm_status_t Hsm_Transition(hsm_t * const sm, hsm_state_t const * const target);
 
 hsm_state_t* Hsm_State_Get(hsm_t const* const sm);
 #ifdef TEST
