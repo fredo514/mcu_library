@@ -87,7 +87,8 @@ pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
         // In proportional-on-error mode (normal mode), the proportional gain reacts to error
         pid_data_t p_term = (1 - pid->p_on_m_weight) * (pid->p_gain * error);
         // In proportional-on-measurement mode, the proportional gain resists change
-        p_term -= pid->p_on_m_weight * (pid->p_gain * input_deriv);
+        pid_data_t p_on_m_term = pid->p_on_m_weight * (pid->p_gain * input_deriv)
+        p_term -= p_on_m_term;
 
         // 3. Calculate derivative term 
         // using derivative on measurement to avoid derivative kick
@@ -112,24 +113,31 @@ pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
         
         // 6. Optional CO filter
         // Normally not needed, but could be rate-limiter, actuator limits, lowpass, etc
+        pid_data_t output_filtered = 0;
         if (pid->output_filter) {
-            output_saturated = pid->output_filter(output_saturated, pid->last_output);
+            output_filtered = pid->output_filter(output_saturated, pid->last_output);
             //output = pid->last_output + ((sampling_period / (pid->alpha_co * pid->Kd / pid->Kp)) * (output - pid->last_output)); // TODO: use callback to provide own filter?
         }
-        output = output_saturated;
+        else{
+            output_filtered = output_saturated;
+        }
 
         // 7. Calculate integral term
         // Update intergral sum at the end for faster response time
         // Store computed term to avoid bump when changing the integral gain
         // Use transform to smooth sharp changes, bilinear (tustin) is acceptable (could also be standard, forward difference, backward difference, etc)
         pid->i_term += pid->i_gain * ((error + pid->last_error) / 2);
+        // Compensate for PonM
+        pid->i_term -= p_on_m_term;
         // Anti-windup
         pid->i_term += pid->kaw * (output_saturated - output_desired);
 
         // save states
         pid->last_error = error;
         pid->last_d_term = d_term;
-        pid->last_output = output_saturated;
+        pid->last_output = output_filtered;
+
+        output = output_filtered;
     }   
 
     pid->last_input = input;
@@ -143,7 +151,7 @@ pid_data_t Pid_Output_Get(pid_t * const pid) {
     return pid->last_output;
 }
 
-pid_data_t Pid_Override(pid_t * const pid) {
+pid_data_t Pid_Override(pid_t * const pid, pid_data_t const output) {
     assert(pid);
 
     pid->mode = PID_MODE_OVERRIDE;
@@ -190,8 +198,6 @@ static pid_data_t Simple_Error(pid_data_t setpoint, pid_data_t input) {
 }
 
 static inline pid_data_t Clamp(pid_data_t const val, pid_data_t const min, pid_data_t const max) {
-    assert(pid);
-    
     if (val > max) {
         return max;
     }

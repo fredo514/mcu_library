@@ -46,7 +46,7 @@ typedef struct {
 /** Handle for opaque PID context */
 typedef struct pid_ctx pid_t;
 
-typedef pid_data_t (*pid_error_calc_cb_t)(pid_data_t setpoint, pid_data_t input)
+typedef pid_data_t (*pid_error_calc_cb_t)(pid_data_t setpoint, pid_data_t input);
 
 /** 
  * @brief Initializes the PID controller with configuration parameters.
@@ -89,7 +89,7 @@ error_t Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint);
  * @param output The override output value.
  * @return Error code indicating success or failure.
  */
-pid_data_t Pid_Override(pid_t * const pid);
+pid_data_t Pid_Override(pid_t * const pid, pid_data_t const output);
 
 /** 
  * @brief Resumes the PID controller from override mode.
@@ -111,7 +111,7 @@ pid_mode_t Pid_Mode_Get(pid_t * const pid);
  * @param action Control action setting.
  * @return Error code indicating success or failure.
  */
-error_t Pid_Action_Set(pid_t * const pid, pid_action_t const action);
+void Pid_Action_Set(pid_t * const pid, pid_action_t const action);
 
 /** 
  * @brief Sets the control output limits for saturation.

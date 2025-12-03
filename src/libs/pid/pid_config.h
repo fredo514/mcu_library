@@ -1,5 +1,5 @@
-#ifndef PID_PRIV_H
-#define PID_PRIV_H
+#ifndef PID_CONFIG_H
+#define PID_CONFIG_H
 
 #include <stdint.h>
 
@@ -11,4 +11,4 @@ typedef float pid_data_t;
 typedef uint32_t pid_data_t; // or fixed‐point
 #endif
 
-#endif PID_PRIV_H
+#endif // PID_CONFIG_H
