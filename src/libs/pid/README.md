@@ -18,7 +18,9 @@ All the measured variables have to be thoroughly filtered. They should go throug
 
 # Tuning
 PI is sufficient most of the time (Kd=0, a=0).
-PID can sometimes help get marginally better performance when tuning aggressively.
+* Use Derivative for higher frequency damping (e.g. aggressive tuning overshoot) and  dead-time.
+> Do **NOT** use derivative in a system where the input is inherently noisy!
+
 CO filter is rarely needed. Only potential for benefit in loops with noise and/or delicate mechanical actuators.
 
 kp, ki, kd are already discretized (e.g. ki = K * Ts / Ti, kd = K * Td / Ts) and Ts is assumed constant.
@@ -39,8 +41,7 @@ Where:
     * If you get oscillation or instability → decrease $K_{aw}$ (smoother correction).
 
 ## Proportional on Measurement Tuning
-Propotionbal on Measurement weigth accepts values between 0 and 1.
+Use Proportional-on-Measurement for lower frequency damping (e.g. integrating process overshooting)
+* In an integrating process, the output needs to return to similar value after a setpoint change, i.e. integral is the primary steady-state contributor.
 
-Set to 0 for proportional term to react only on error (default, standard PID).
-
-Increase for proportional term to also react to input rate of change (resist change). This is useful for integrating processes. 
+Propotionbal on Measurement weigth accepts values between 0 and 1. Set to 0 for proportional term to react only on error (default, standard PID).

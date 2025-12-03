@@ -27,6 +27,10 @@ typedef struct {
     pid_data_t kp;               ///< Proportional gain
     pid_data_t ki;               ///< Integral gain
     pid_data_t kd;               ///< Derivative gain
+    // pid_data_t K;      // continuous proportional gain
+    // pid_data_t Ti;     // integral time (s)
+    // pid_data_t Td;     // derivative time (s)
+    // pid_data_t Ts;     // sampling period (s)
     pid_data_t alpha_deriv;      ///< Filter coefficient for derivative term
     pid_data_t kaw               ///< Anti-windup gain
     pid_data_t max_output;       ///< Maximum output value for saturation
