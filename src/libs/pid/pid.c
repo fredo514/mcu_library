@@ -71,6 +71,7 @@ pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
 
         if (pid->action == PID_ACTION_REVERSE) {
             error      = -error;
+            p_error    = -p_error;
             input_deriv = -input_deriv;
         }
 
@@ -152,21 +153,15 @@ pid_data_t Pid_Override(pid_t * const pid, pid_data_t const output) {
 void Pid_Resume(pid_t * const pid) {
     assert(pid);
     
-    // need to preload intergral term to avoid bump when exiting override mode
+    // need to preload integral term to avoid bump when exiting override mode
     if (pid->mode == PID_MODE_OVERRIDE) {
-        pid_data_t error = 0;
-        if (pid->error_calc_cb) {
-            error = pid->error_calc_cb(pid->setpoint, input);
-        }
-        else {
-            error = pid->setpoint - input;
-        }
+        pid_data_t p_error = ((1 - pid->p_on_m_weight) - pid->setpoint) - input;
 
         if (pid->action == PID_ACTION_REVERSE) {
-            error      = -error;
+            p_error      = -p_error;
         }
 
-        pid_data_t p_term = pid->p_gain * error;
+        pid_data_t p_term = pid->p_gain * p_error;
         pid->i_term = pid->last_output - (p_term - pid->last_d_term);
         pid->i_term = Clamp(pid->i_term, pid->min_output, pid->max_output);
     }

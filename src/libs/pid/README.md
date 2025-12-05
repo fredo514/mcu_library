@@ -10,7 +10,6 @@ The algorithm implemented is the independant form PID with controller output fil
 * Anti-windup using tunable back-calculation for faster saturation recovery
 * Optional control output filter
 * Override/resume mode with integral preloading for bumpless transfer
-* 
 
 # Usage
 Sample at 1/10 to 1/100 of the process settling time.
