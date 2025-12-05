@@ -9,7 +9,7 @@ struct pid_ctx {
     pid_data_t kaw; 
     float p_on_m_weight;
 
-     pid_action_t action;
+    pid_action_t action;
     pid_mode_t mode;
 
     // for integral

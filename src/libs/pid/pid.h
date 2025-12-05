@@ -22,6 +22,9 @@ typedef enum {
     PID_ACTION_MAX
 } pid_action_t;
 
+typedef pid_data_t (*pid_error_calc_cb_t)(pid_data_t setpoint, pid_data_t input);
+typedef pid_data_t (*pid_filter_cb_t)(pid_data_t input, pid_data_t last_state);
+
 /** PID Controller Configuration */
 typedef struct {
     pid_data_t kp;               ///< Proportional gain
@@ -36,17 +39,18 @@ typedef struct {
     pid_data_t max_output;       ///< Maximum output value for saturation
     pid_data_t min_output;       ///< Minimum output value for saturation
     pid_action_t action;         ///< Control action (direct or reverse)
-    float proportional_on_measurement_weight; ///< Weighting for P action on measurement
+    float p_on_m_weight; ///< Weighting for P action on measurement
     pid_mode_t mode;             ///< Current mode of PID (active/override)
     
     /** Optional callback for error calculation */
-    pid_data_t (*calculate_error_cb)(pid_data_t setpoint, pid_data_t input);
+    pid_error_calc_cb_t calculate_error_cb;
+
+    pid_filter_cb_t deriv_filter_cb;
+    pid_filter_cb_t output_filter_cb;
 } pid_config_t;
 
 /** Handle for opaque PID context */
 typedef struct pid_ctx pid_t;
-
-typedef pid_data_t (*pid_error_calc_cb_t)(pid_data_t setpoint, pid_data_t input);
 
 /** 
  * @brief Initializes the PID controller with configuration parameters.
@@ -62,7 +66,7 @@ void Pid_Init(pid_t * const pid,  pid_config_t const * const config);
  * @param error_calc_cb Pointer to the error calculation function.
  * @return Error code indicating success or failure.
  */
-error_t Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const error_calc_cb);
+void Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const error_calc_cb);
 
 /** 
  * @brief Sets the PID gains and proportional-on-measurement weighting.
@@ -73,7 +77,7 @@ error_t Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const
  * @param p_on_m Weighting for proportional action on measurement.
  * @return Error code indicating success or failure.
  */
-void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, pid_data_t const kd, pid_data_t const alpha, float const p_on_m_weight);
+void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, pid_data_t const kd, float const p_on_m_weight);
 
 /** 
  * @brief Sets the PID setpoint.
@@ -81,7 +85,7 @@ void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, p
  * @param setpoint Desired setpoint value.
  * @return Error code indicating success or failure.
  */
-error_t Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint);
+void Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint);
 
 /** 
  * @brief Overrides the PID output to a specific value.
@@ -120,7 +124,7 @@ void Pid_Action_Set(pid_t * const pid, pid_action_t const action);
  * @param max_output Maximum allowed control output.
  * @return Error code indicating success or failure.
  */
-error_t Pid_Output_Limits_Set(pid_t * const pid, pid_data_t const min_output, pid_data_t const max_output);
+void Pid_Output_Limits_Set(pid_t * const pid, pid_data_t const min_output, pid_data_t const max_output);
 
 /** 
  * @brief Updates the PID output based on the input value.

@@ -17,8 +17,9 @@ void Pid_Init(pid_t * const pid,  pid_config_t const * const config) {
     pid->action = config->action;
     pid->mode = config->mode;
 
-    Pid_Gain_Set(pid, config->kp, config->ki, config->kd, config->alpha, config->p_on_m_weight);
+    Pid_Gain_Set(pid, config->kp, config->ki, config->kd, config->p_on_m_weight);
     pid->alpha_deriv = config->sampling_time / 10;
+    pid->kaw = config->kaw;
     
     if (config->error_calc_cb) {
         pid->error_calc_cb = config->error_calc_cb;
@@ -28,7 +29,7 @@ void Pid_Init(pid_t * const pid,  pid_config_t const * const config) {
     }
 }
 
-void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, pid_data_t const kd, pid_data_t const alpha, float const p_on_m_weight) {
+void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, pid_data_t const kd, =float const p_on_m_weight) {
     assert(pid);
     assert(kp >= 0);
     assert(ki >= 0);
@@ -42,40 +43,30 @@ void Pid_Gain_Set(pid_t * const pid, pid_data_t const kp, pid_data_t const ki, p
     // pid->Kp = K;
     // pid->Ki = K * Ts / Ti;
     // pid->Kd = K * Td / Ts;
-    pid->alpha = alpha;
 
     pid->p_on_m_weight = p_on_m_weight;
 }
 
-error_t Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const error_calc_cb) {
+void Pid_Error_Callback_Register(pid_t * const pid, pid_error_calc_cb_t const error_calc_cb) {
     assert(pid);
 
     if (error_calc_cb) {
         pid->error_calc_cb = error_calc_cb;
     }
-    else {
-        pid->error_calc_cb = &Simple_Error;
-    }
-
-    return NO_ERROR;
 }
 
 pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
     assert(pid);
+    assert(input != NaN);
 
     // assign right away in case we're inactive
     pid_data_t output = pid->last_output;
     
     if (pid->mode == PID_MODE_ACTIVE) {
         // 1. calculate error and handle mode
-        pid_data_t error = 0;
-        if (pid->error_calc_cb) {
-            error = pid->error_calc_cb(pid->setpoint, input);
-        }
-        else {
-            error = pid->setpoint - input;
-        }
-
+        pid_data_t error = pid->setpoint - input;
+        // p_on_m_weight makes the controller less aggressive on setpoint changes
+        pid_data_t p_error = ((1 - pid->p_on_m_weight) * pid->setpoint) - input;
         pid_data_t input_deriv = input - pid->last_input;
 
         if (pid->action == PID_ACTION_REVERSE) {
@@ -83,12 +74,8 @@ pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
             input_deriv = -input_deriv;
         }
 
-        // 2. Calculate proportional on error and proportional on measurement terms
-        // In proportional-on-error mode (normal mode), the proportional gain reacts to error
-        pid_data_t p_term = (1 - pid->p_on_m_weight) * (pid->p_gain * error);
-        // In proportional-on-measurement mode, the proportional gain resists change
-        pid_data_t p_on_m_term = pid->p_on_m_weight * (pid->p_gain * input_deriv)
-        p_term -= p_on_m_term;
+        // 2. Calculate proportional term
+        pid_data_t p_term = pid->p_gain * p_error;
 
         // 3. Calculate derivative term 
         // using derivative on measurement to avoid derivative kick
@@ -127,10 +114,10 @@ pid_data_t Pid_Update(pid_t * const pid, pid_data_t const input) {
         // Store computed term to avoid bump when changing the integral gain
         // Use transform to smooth sharp changes, bilinear (tustin) is acceptable (could also be standard, forward difference, backward difference, etc)
         pid->i_term += pid->i_gain * ((error + pid->last_error) / 2);
-        // Compensate for PonM
-        pid->i_term -= p_on_m_term;
         // Anti-windup
         pid->i_term += pid->kaw * (output_saturated - output_desired);
+        // clamp
+        pid->i_term = Clamp(pid->i_term, pid->min_output, pid->max_output);
 
         // save states
         pid->last_error = error;
@@ -153,6 +140,8 @@ pid_data_t Pid_Output_Get(pid_t * const pid) {
 
 pid_data_t Pid_Override(pid_t * const pid, pid_data_t const output) {
     assert(pid);
+    assert(output >= pid->min_output);
+    assert(output <= pid->max_output);
 
     pid->mode = PID_MODE_OVERRIDE;
     pid->last_output = output;
@@ -165,7 +154,20 @@ void Pid_Resume(pid_t * const pid) {
     
     // need to preload intergral term to avoid bump when exiting override mode
     if (pid->mode == PID_MODE_OVERRIDE) {
-        pid->i_term = pid->last_output;
+        pid_data_t error = 0;
+        if (pid->error_calc_cb) {
+            error = pid->error_calc_cb(pid->setpoint, input);
+        }
+        else {
+            error = pid->setpoint - input;
+        }
+
+        if (pid->action == PID_ACTION_REVERSE) {
+            error      = -error;
+        }
+
+        pid_data_t p_term = pid->p_gain * error;
+        pid->i_term = pid->last_output - (p_term - pid->last_d_term);
         pid->i_term = Clamp(pid->i_term, pid->min_output, pid->max_output);
     }
     
@@ -185,15 +187,24 @@ void Pid_Action_Set(pid_t * const pid, pid_action_t const action) {
     pid->action = action;
 }
 
-error_t Pid_Output_Limits_Set(pid_t * const pid, pid_data_t const min_output, pid_data_t const max_output) {
+void Pid_Output_Limits_Set(pid_t * const pid, pid_data_t const min_output, pid_data_t const max_output) {
     assert(pid);
+    assert(min_output < max_output);
+
+    pid->min_output = min_output;
+    pid->max_output = max_output;
+
+    pid->last_output = Clamp(pid->last_output, min_output, max_output);
+    pid->i_term = Clamp(pid->i_term, min_output, max_output);
 }
 
-error_t Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint){
+void Pid_Setpoint_Set(pid_t * const pid, pid_data_t const setpoint){
     assert(pid);
+
+    pid->setpoint = setpoint;
 }
 
-static pid_data_t Simple_Error(pid_data_t setpoint, pid_data_t input) {
+static pid_data_t Compute_Error(pid_data_t setpoint, pid_data_t input) {
     return setpoint - input;
 }
 
