@@ -65,6 +65,34 @@ Propotionbal on Measurement weigth accepts values between 0 and 1. Set to 0 for 
 
 # TODO (Planned Enhancements)
 These features are intentionally not implemented yet but are planned:
-* Add analysis (graphs) to prove correctness and robustness (override/resume, gain change, saturation, various plants: normal, dead-time, slow, fast, integrating, etc)
-    * Discrete-time root locus / Bode of the closed loop
-    * Monte-carlo varying factors (alpha_deriv, kaw, p_on_m_weight, etc)
+
+* Unit tests for:
+    * Integrator accumulation
+    * Integrator freeze on saturation
+    * Integrator unwind
+    * Saturation
+    * Derivative calculation
+    * Derivative filter update
+    * Override/resume behavior (internal)
+    * Gain change logic
+    * Internal clamping, limits, booleans, flags
+    * State reset
+
+* Python (numpy, matplotlib, control.matlab ctl/lsim/c2d/tf, pybind11) closed-loop visual analysis:
+    * Stability across various plants (normal, dead-time, slow, fast, integrating, non-linear, etc)
+    * Time-domain performance
+    * Response quality (overshoot, settling, etc)
+    * Monte-Carlo gain/plant variation (alpha_deriv, kaw, p_on_m_weight, etc)
+    * Dead-time response
+    * Saturation recovery
+    * Robustness to disturbances
+    * Bumpless transfer (gain change, resume)
+    * Regression testing with plots and numeric thresholds
+
+* Interactive tuner
+    * plant identification from data import
+    * simulated plant
+    * disturbance injection
+    * gain slider
+    * stability graphs (bode, root-locus)
+    * auto-tune
