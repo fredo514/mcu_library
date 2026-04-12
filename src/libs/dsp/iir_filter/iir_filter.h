@@ -3,14 +3,17 @@
 
 #include "error.h"
 
-typedef float IIR_DATA_t;
+typedef float iir_data_t;
 
-typedef struct IIR_CTX const * const IIR_h;
+typedef struct iir_ctx iir_t;
 
-IIR_h Fir_Filt_Create(void);
-ERROR_CODE_t Fir_Filt_Init(IIR_h filt, IIR_DATA_t * coeffs);
+iir_t * Iir_Filt_Create(void);
+error_t Iir_Filt_Init(iir_t * const filt, IIR_DATA_t * coeffs);
 
-IIR_DATA_t Iir_Filt_Update(IIR_h filt, IIR_DATA_t input);
-IIR_DATA_t Iir_Filt_Output_Get(IIR_h filt);
+// change gains using ramp every update
+error_t Iir_Compute_Coeffs(iir_t * const filt, iir_filt_type_t type, iir_data_t gain, iir_data_t cutoff)
+
+iir_data_t Iir_Filt_Update(iir_t * const filt, iir_data_t input);
+iir_data_t Iir_Filt_Output_Get(iir_t * const filt);
 
 #endif // IIR_FILTER_H
